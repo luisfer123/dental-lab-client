@@ -1,0 +1,9 @@
+export enum PhoneType {
+
+    HOME = 'HOME',
+	CELLPHONE = 'CELLPHONE',
+	OFFICE = 'OFFICE',
+	DENTIST_OFFICE = 'DENTIST_OFFICE',
+	LABORATORY = 'LABORATORY',
+
+}

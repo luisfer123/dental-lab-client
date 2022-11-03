@@ -1,0 +1,44 @@
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: white">
+    <div class="container-fluid">
+      <a class="navbar-brand" th:href="@{/home}">Garden Helper</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+  
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a [routerLink]="['/']" class="nav-link active" aria-current="page">Inicio</a>
+          </li>
+          <li *ngIf="hasRole([Role.ADMIN])" class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Administrar
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item">Usuarios</a></li>
+            </ul>
+          </li>
+          <li *ngIf="isAuthenticated()" class="nav-item">
+            <a [routerLink]="['/profile']" class="nav-link">Mi Perfil</a>
+          </li>
+        </ul>
+
+        <ul class="navbar-nav ms-auto">
+          <li *ngIf="isAuthenticated()" class="nav-item">
+            <a [routerLink]="[]" (click)="logout()" class="nav-link">Cerrar sesi&oacute;n</a>
+          </li>
+          <li *ngIf="!isAuthenticated()" class="nav-item dropstart">
+            <a type="button" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              Identificarse
+            </a>
+            <ul class="dropdown-menu">
+              <!-- Dropdown menu links -->
+              <app-login></app-login>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>

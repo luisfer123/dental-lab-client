@@ -1,0 +1,161 @@
+<div class="container mt-3">
+    <section>
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            <img [src]="profilePicture"
+                                alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+                            <h5 class="my-3">{{user?.username}}</h5>
+                            
+                        </div>
+                    </div>
+                    <div class="card mb-4 mb-lg-0">
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush rounded-3">
+                                <li class="list-group-item d-flex justify-content-center align-content-center p-3">
+                                    <a [routerLink]="['']" (click)="onEditProfile()" class="text-decoration-none">Editar informaci&oacute;n</a>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-center align-content-center p-3">
+                                    <a [routerLink]="['']" (click)="onEditProfile()" class="text-decoration-none">Administrar direcciones</a>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-center align-content-center p-3">
+                                    <a [routerLink]="['']" (click)="onEditProfile()" class="text-decoration-none">Administrar telefonos</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="text-muted mb-0">Nombre</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="mb-0">{{user?.firstName}} {{user?.middleName}}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="text-muted mb-0">Apellidos</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="mb-0">{{user?.lastName}} {{user?.secondLastName}}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="text-muted mb-0">Nombre de usuario</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="mb-0">{{user?.username}}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="text-muted mb-0">Correo electrónico</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="mb-0">{{user?.email}}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div>
+                                <div *ngIf="defaultAddress == null" class="row">
+                                    <div class="col-sm-3">
+                                        <p class="mb-0 text-muted mb-0">Direcci&oacute;n principal</p>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <p>
+                                            No hay direcci&oacute;n seleccionada como principal.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row" *ngIf="defaultAddress != null">
+                                    <div class="col-sm-3">
+                                        <p class="mb-0 text-muted mb-0">Direcci&oacute;n principal</p>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <p>
+                                            <span *ngIf="defaultAddress.addressType != null">{{ defaultAddress.addressType | addressType }}</span>
+                                        </p>
+                                        <p>
+                                            <span *ngIf="defaultAddress.street != null">{{ defaultAddress.street }}, </span> 
+                                            <span *ngIf="defaultAddress.number != null">No {{ defaultAddress.number }}, </span>
+                                            <span *ngIf="defaultAddress.innerNumber != null">Int. {{ defaultAddress.innerNumber }} </span>
+                                            <br>
+                                            <span *ngIf="defaultAddress.zipPostcode != null">C.P. {{ defaultAddress.zipPostcode }}, </span>
+                                            <span *ngIf="defaultAddress.city != null">{{ defaultAddress.city }}, </span>
+                                            Mich.
+                                            <br>
+                                            M&eacute;xico.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div *ngIf="addresses.length > 0">
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <button class="btn btn-outline-secondary btn-small float-end" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                                                Todas las direcciones registradas
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-auto collapse" id="collapseExample">
+                                            <div class="mt-3">
+                                                <ul>
+                                                    <li *ngFor="let address of addresses">
+                                                        <p>
+                                                            <span *ngIf="address.addressType != null">{{ address.addressType | addressType }}</span>
+                                                        </p>
+                                                        <p>
+                                                            <span *ngIf="address.street != null">{{ address.street }}, </span> 
+                                                            <span *ngIf="address.number != null">No {{ address.number }}, </span>
+                                                            <span *ngIf="address.innerNumber != null">Int. {{ address.innerNumber }} </span>
+                                                            <br>
+                                                            <span *ngIf="address.zipPostcode != null">C.P. {{ address.zipPostcode }}, </span>
+                                                            <span *ngIf="address.city != null">{{ address.city }}, </span>
+                                                            Mich.
+                                                            <br>
+                                                            M&eacute;xico.
+                                                        </p>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="user?.phones == null || (user != null &&  user.phones.length === 0)"class="row">
+                                <hr>
+                                <div class="col-sm-3">
+                                    <p class="mb-0 text-muted">Telefonos</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p>No hay Telefonos registrados.</p>
+                                </div>
+                            </div>
+                            <div *ngIf=" user != null && user.phones != null && user.phones.length > 0"class="row">
+                                <hr>
+                                <div class="col-sm-3">
+                                    <p class="mb-0 text-muted">Telefonos</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <ul *ngFor="let phone of user?.phones">
+                                        <li class="mb-0">{{ phone.phoneNumber }} - <span *ngIf="phone.phoneType != null">[{{ phone.phoneType | phoneType }}]</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

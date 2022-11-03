@@ -1,0 +1,7 @@
+export enum AddressType {
+
+    HOME = 'HOME',
+	DENTIST_OFFICE = 'DENTIST_OFFICE',
+	LABORATORY = 'LABORATORY',
+	OTHER = 'OTHER'
+}

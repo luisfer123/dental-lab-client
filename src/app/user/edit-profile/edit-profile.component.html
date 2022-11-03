@@ -1,0 +1,71 @@
+<div class="container mt-3">
+    <section>
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            <img [src]="profilePicture"
+                                alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+                            <h5 class="my-3">{{user?.username}}</h5>
+                            
+                        </div>
+                    </div>
+                    <div class="card mb-4 mb-lg-0">
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush rounded-3">
+                                <li class="list-group-item d-flex justify-content-center align-content-center p-3">
+                                    <a [routerLink]="['/profile']" class="text-decoration-none">Perfil</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="card mb-1">
+                        <div class="card-body">
+                            <h5 class="h5 text-center">Editar informaci&oacute;n</h5>
+                        </div>
+                    </div>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <form [formGroup]="fullNameForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div>
+                                            <label for="firstName" class="form-label">Nombre</label>
+                                            <input formControlName="firstName" type="text" class="form-control" id="firstName">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div>
+                                            <label for="middleName" class="form-label">Segundo Nombre</label>
+                                            <input formControlName="middleName" type="text" class="form-control" id="middleName">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div>
+                                            <label for="lastName" class="form-label">Apellido paterno</label>
+                                            <input formControlName="lastName" type="text" class="form-control" id="lastName">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div>
+                                            <label for="secondLastName" class="form-label">Apellido materno</label>
+                                            <input formControlName="secondLastName" type="text" class="form-control" id="secondLastName">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="float-end mt-3">
+                                    <button (click)="onUpdateFullName()" type="button" class="btn btn-primary">Guardar</button> 
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
