@@ -1,0 +1,80 @@
+@use 'sass:color';
+@import 'base/variables';
+
+/* Solo aplica en pantallas pequeñas cuando el menú está desplegado */
+@media (max-width: 991.98px) {
+  #navbarSupportedContent.show {
+    background-color: #212529; /* opcional, mismo tono que navbar */
+    padding: 1rem 0;
+  }
+
+  /* 🔹 Márgenes entre links */
+  #navbarSupportedContent.show .nav-link {
+    margin: 0.5rem 0 0.5rem 1rem; /* arriba, derecha, abajo, izquierda */
+    padding: 0.5rem 0;
+    text-align: left; /* mantiene texto alineado */
+  }
+
+  /* 🔹 Márgenes para el botón de sesión (Identificarse / Cerrar sesión) */
+  #navbarSupportedContent.show .btn {
+    margin: 1rem 0 0 1rem; /* agrega espacio arriba e izquierda */
+    width: calc(100% - 2rem); /* opcional: que se vea más ancho sin tocar bordes */
+  }
+
+  /* 🔹 Si usas el formulario de búsqueda */
+  #navbarSupportedContent.show form {
+    margin: 0.5rem 1rem;
+  }
+}
+
+/* Personalización ligera sobre Bootstrap */
+.nav-link {
+  text-decoration: none;
+  color: $color-navbar-text;
+  font-weight: 500;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $color-primary;
+  }
+
+  &.active {
+    border-bottom: 2px solid $color-primary;
+    padding-bottom: 0.2rem;
+  }
+}
+
+/* Dropdown dentro de navbar */
+.navbar .dropdown-toggle {
+  color: white;
+  background-color: transparent;
+  border: none;
+  font-weight: 500;
+
+  &:hover,
+  &:focus {
+    color: $color-primary;
+  }
+}
+
+/* Cursor tipo "mano" */
+.navbar .btn,
+.navbar .nav-link,
+.navbar .dropdown-item {
+  cursor: pointer;
+}
+
+/* Evita subrayado al pasar el mouse */
+.navbar .btn:hover,
+.navbar .nav-link:hover {
+  text-decoration: none;
+}
+
+/* Ajuste para buscador oscuro */
+.form-control.bg-dark {
+  background-color: #343a40 !important;
+  border-color: #6c757d !important;
+  color: #f8f9fa !important;
+}
+
+

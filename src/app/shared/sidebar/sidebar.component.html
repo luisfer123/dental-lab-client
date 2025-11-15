@@ -1,0 +1,59 @@
+<aside class="sidebar">
+
+  <!-- Si el usuario está autenticado -->
+  <div *ngIf="auth.currentUser$ | async as user; else guest">
+
+    <!-- Sección principal -->
+    <div class="sidebar-section">
+      <button class="sidebar-btn" (click)="goTo('/trabajos/nuevo')"
+        *ngIf="hasAnyRole(['ROLE_ADMIN', 'ROLE_TECHNICIAN'])">
+        🞧 Nuevo trabajo
+      </button>
+
+      <button class="sidebar-btn" (click)="goTo('/trabajos/en-proceso')"
+        *ngIf="hasRole('ROLE_ADMIN')">
+        ⚙️ Trabajos en proceso
+      </button>
+
+      <button class="sidebar-btn" (click)="goTo('/trabajos/por-asignar')"
+        *ngIf="hasRole('ROLE_ADMIN')">
+        🧾 Trabajos por asignar
+      </button>
+
+      <button class="sidebar-btn" (click)="goTo('/trabajos/por-entregar')"
+        *ngIf="hasRole('ROLE_ADMIN')">
+        📦 Trabajos por entregar
+      </button>
+    </div>
+
+    <!-- Línea divisora: solo si el usuario es ADMIN -->
+    <hr class="sidebar-divider" *ngIf="hasRole('ROLE_ADMIN')" />
+
+    <!-- Sección personal -->
+    <div class="sidebar-section">
+      <button class="sidebar-btn" (click)="goTo('/trabajos/mis-trabajos')"
+        *ngIf="hasAnyRole(['ROLE_ADMIN', 'ROLE_TECHNICIAN'])">
+        👷 Mis trabajos
+      </button>
+
+      <button class="sidebar-btn" (click)="goTo('/trabajos/mis-por-entregar')"
+        *ngIf="hasAnyRole(['ROLE_ADMIN', 'ROLE_TECHNICIAN'])">
+        📬 Mis trabajos por entregar
+      </button>
+    </div>
+  </div>
+
+  <!-- Si el usuario NO está autenticado -->
+  <ng-template #guest>
+    <div class="sidebar-guest">
+      <p class="sidebar-message">
+        Para ver opciones, favor de identificarse primero.
+      </p>
+
+      <button class="sidebar-btn" (click)="goTo('/auth/login')">
+        🔐 Identificarse
+      </button>
+    </div>
+  </ng-template>
+
+</aside>

@@ -1,0 +1,46 @@
+.card {
+  background-color: #fff;
+  border: 1px solid $color-border;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: $shadow-soft;
+}
+
+.work-list {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+
+  th, td {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid $color-border;
+  }
+
+  tr:hover {
+    background-color: lighten($color-body-bg, 3%);
+  }
+
+  button {
+    margin-right: 0.5rem;
+    padding: 0.3rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .btn-edit {
+    background-color: $color-primary;
+    color: white;
+  }
+
+  .btn-delete {
+    background-color: $color-error;
+    color: white;
+  }
+
+  .btn-edit:hover { background-color: darken($color-primary, 5%); }
+  .btn-delete:hover { background-color: darken($color-error, 5%); }
+}

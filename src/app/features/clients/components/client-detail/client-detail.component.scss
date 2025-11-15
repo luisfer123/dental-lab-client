@@ -1,0 +1,36 @@
+.card {
+  border-radius: 0.5rem;
+}
+
+.card-title {
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.8rem;
+}
+
+.bi {
+  vertical-align: text-bottom;
+}
+
+.btn-danger {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-danger:hover {
+  transform: scale(1.05);
+}
+
+.container {
+  padding-bottom: 4rem;
+}
+
+.modal-content {
+  border-radius: 0.6rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-footer .btn {
+  min-width: 100px;
+}

@@ -1,0 +1,13 @@
+// ===============================
+// Base Variables Import
+// ===============================
+// This file acts as a bridge between components and the active theme.
+// Cambia aquí el import para seleccionar el tema global de la app.
+
+// Tema activo (Porcelain Warm)
+@import './themes/variables-blue-gray';
+
+// Otros temas disponibles:
+//@import '../themes/variables-porcelain';
+// @import '../themes/variables-digital';
+// @import '../themes/variables-dark';

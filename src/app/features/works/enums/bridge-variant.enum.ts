@@ -1,0 +1,6 @@
+export enum BridgeVariant {
+  MONOLITHIC = 'MONOLITHIC',
+  STRATIFIED = 'STRATIFIED',
+  METAL = 'METAL',
+  TEMPORARY = 'TEMPORARY'
+}

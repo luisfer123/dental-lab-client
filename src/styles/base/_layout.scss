@@ -1,0 +1,85 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  background-color: $color-body-bg;
+  font-family: 'Poppins', 'Roboto', sans-serif;
+  color: $color-text-main;
+  height: 100%;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.navbar {
+  height: $navbar-height;
+  background-color: $color-navbar-bg;
+  color: $color-text-light;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  box-shadow: $shadow-soft;
+
+  .nav-links {
+    display: flex;
+    gap: 1rem;
+
+    a {
+      color: $color-text-light;
+      text-decoration: none;
+      font-weight: 500;
+
+      &:hover {
+        color: $color-accent;
+      }
+    }
+  }
+
+  .login-btn {
+    background-color: transparent;
+    border: 1px solid $color-accent;
+    border-radius: 4px;
+    padding: 0.4rem 1rem;
+    color: $color-accent;
+
+    &:hover {
+      background-color: $color-accent;
+      color: $color-text-light;
+    }
+  }
+}
+
+.main-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: $sidebar-width;
+  background-color: $color-sidebar-bg;
+  color: $color-text-light;
+  padding-top: 1rem;
+  box-shadow: $shadow-soft;
+
+  a {
+    display: block;
+    color: $color-text-light;
+    padding: 0.75rem 1.25rem;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      background-color: darken($color-sidebar-bg, 5%);
+    }
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}

@@ -1,0 +1,68 @@
+@use 'sass:color';
+@import 'base/variables';
+
+.sidebar {
+  width: $sidebar-width;
+  background-color: $color-sidebar-bg;
+  color: $color-navbar-text;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+  box-shadow: $shadow-soft;
+  height: 100%;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 1rem;
+}
+
+.sidebar-divider {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid color.adjust($color-navbar-text, $alpha: -0.7);
+}
+
+.sidebar-btn {
+  background: none;
+  border: none;
+  text-align: left;
+  color: $color-navbar-text;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    background-color: color.mix($color-accent, $color-sidebar-bg, 15%);
+    color: $color-text-light;
+  }
+
+  &:active {
+    background-color: color.mix($color-accent, $color-sidebar-bg, 30%);
+  }
+}
+
+.sidebar-guest {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: $color-navbar-text;
+  padding: 1rem;
+}
+
+.sidebar-message {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}

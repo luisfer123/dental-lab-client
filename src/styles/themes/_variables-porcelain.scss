@@ -1,0 +1,43 @@
+// ===============================
+// Porcelain Warm Theme Variables
+// ===============================
+// A soft, ivory-toned theme with warm gold and beige tones
+// Perfect for client-facing or aesthetic parts of the Dental Lab app.
+
+$color-navbar-bg: #f2e6d9;       // light ivory beige (navbar)
+$color-sidebar-bg: #f5eadf;      // slightly deeper beige (sidebar)
+$color-body-bg: #f9f7f3;         // creamy background for whole page
+$color-card-bg: #ffffff;         // pure white for contrast on cards
+$color-border: #e5dacb;          // soft beige-gray borders
+
+// Accent & highlights
+$color-primary: #c69c6d;         // warm golden-brown accent
+$color-accent: #dcb98d;          // lighter gold accent (hover/highlight)
+$color-hover: #efdecc;           // very subtle hover background
+
+// Typography
+$color-text-main: #3b3b3b;       // warm dark gray for main text
+$color-text-muted: #6f6255;      // soft brown-gray for secondary text
+$color-text-light: #ffffff;      // white text for dark buttons (if used)
+
+// Status colors
+$color-success: #86b06b;         // soft natural green
+$color-warning: #e2a45a;         // warm amber
+$color-error: #cc6c5c;           // desaturated coral red
+
+// Shadows and depth
+$shadow-soft: 0 2px 5px rgba(0, 0, 0, 0.05);
+$shadow-medium: 0 4px 10px rgba(0, 0, 0, 0.08);
+
+// Layout
+$sidebar-width: 240px;
+$navbar-height: 64px;
+
+// Font
+$font-family-base: 'Lato', 'Source Sans Pro', sans-serif;
+
+// Button colors
+$btn-primary-bg: $color-primary;
+$btn-primary-hover: darken($color-primary, 5%);
+$btn-danger-bg: $color-error;
+$btn-danger-hover: darken($color-error, 5%);

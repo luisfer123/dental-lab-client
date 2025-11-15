@@ -1,0 +1,25 @@
+// ===============================
+//  Dental Lab App - Color Theme
+// ===============================
+$color-navbar-bg: #1b3c57;        // Deep blue-gray
+$color-navbar-text: #ffffff;      // White text for navbar
+$color-sidebar-bg: #2c3e50;       // Mid blue-gray (between navbar & body)
+$color-body-bg: #f5f7fa;          // Light neutral background
+$color-primary: #1976d2;          // Accent blue
+$color-accent: #42a5f5;           // Lighter accent for hover/highlight
+$color-text-main: #2b2b2b;        // Main text
+$color-text-light: #ffffff;       // Text on dark backgrounds
+$color-border: #e0e0e0;
+
+// States
+$color-success: #4caf50;
+$color-warning: #ffb300;
+$color-error: #e53935;
+
+// Shadows and depth
+$shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-medium: 0 4px 10px rgba(0, 0, 0, 0.15);
+
+// Spacing
+$sidebar-width: 240px;
+$navbar-height: 60px;

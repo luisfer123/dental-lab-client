@@ -1,0 +1,133 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <h2 class="mb-0">Trabajos</h2>
+
+      <!-- Filtro por familia de trabajo -->
+      <select
+        class="form-select form-select-sm w-auto"
+        [(ngModel)]="selectedWorkFamily"
+        (change)="onFamilyChange(selectedWorkFamily)"
+      >
+        <option value="ALL">Todos</option>
+        <option value="FIXED_PROSTHESIS">Prótesis fija</option>
+        <option value="REMOVABLE_PROSTHESIS">Prótesis removible</option>
+        <option value="FULL_DENTURE">Prótesis completa</option>
+      </select>
+    </div>
+
+    <!-- Filtros adicionales -->
+    <div class="d-flex gap-2 mb-3">
+      <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+        <option value="ALL">Todos los estados</option>
+        <option value="PENDING">Pendiente</option>
+        <option value="IN_PROGRESS">En proceso</option>
+        <option value="DELIVERED">Entregado</option>
+      </select>
+
+      <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedType" (change)="onFilterChange()">
+        <option value="ALL">Todos los tipos</option>
+        <option value="CROWN">Corona</option>
+        <option value="BRIDGE">Puente</option>
+        <option value="INLAY">Incrustación</option>
+      </select>
+    </div>
+
+    <!-- New work Button -->
+    <button class="btn btn-sm btn-success" routerLink="/works/new">
+      <i class="bi bi-plus-circle"></i> Nuevo trabajo
+    </button>
+  </div>
+
+  <!-- Cargando -->
+  <div *ngIf="loading" class="text-center py-5 text-muted">
+    <div class="spinner-border" role="status"></div>
+    <p class="mt-2">Cargando {{ selectedWorkFamily }}...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger text-center">
+    {{ error }}
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!loading && !error && works.length > 0">
+    <table class="table table-hover align-middle shadow-sm">
+      <thead class="table-light">
+        <tr>
+          <th scope="col" style="width: 60px;">#</th>
+          <th scope="col">Tipo</th>
+          <th scope="col">Familia</th>
+          <th scope="col">Cliente</th>
+          <th scope="col">Estado</th>
+          <th scope="col" style="width: 140px;">Creado</th>
+          <th scope="col" class="text-end" style="width: 120px;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let w of works; let i = index">
+          <th scope="row">{{ i + 1 + page * size }}</th>
+          <td>{{ w.typeLabel || w.type }}</td>
+          <td>{{ w.familyLabel || w.workFamily }}</td>
+          <td>{{ w.clientId || '-' }}</td>
+          <td class="text-center">
+            <span
+              class="badge"
+              [ngClass]="{
+                'bg-success': w.status === 'DELIVERED' || w.status === 'COMPLETED',
+                'bg-warning': w.status === 'IN_PROGRESS',
+                'bg-secondary': !w.status || w.status === 'PENDING'
+              }"
+            >
+              {{ w.status || 'Sin estado' }}
+            </span>
+          </td>
+          <td>{{ w.createdAt | date: 'short' }}</td>
+          <td class="text-end">
+            <button
+              class="btn btn-sm btn-outline-primary me-1"
+              (click)="goToDetails(w.id!)"
+            >
+              <i class="bi bi-eye"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Información de página -->
+    <p class="text-muted small text-center mb-3">
+      Página {{ page + 1 }} de {{ totalPages || 1 }} —
+      {{ totalElements || works.length }} trabajos en total
+    </p>
+
+    <!-- Paginación -->
+    <nav *ngIf="totalPages > 1" class="d-flex justify-content-center">
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="page === 0">
+          <a class="page-link" href="#" (click)="prevPage(); $event.preventDefault()">«</a>
+        </li>
+
+        <li
+          class="page-item"
+          *ngFor="let p of [].constructor(totalPages); let i = index"
+          [class.active]="i === page"
+        >
+          <a class="page-link" href="#" (click)="goToPage(i); $event.preventDefault()">
+            {{ i + 1 }}
+          </a>
+        </li>
+
+        <li class="page-item" [class.disabled]="page + 1 >= totalPages">
+          <a class="page-link" href="#" (click)="nextPage(); $event.preventDefault()">»</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Vacío -->
+  <div *ngIf="!loading && !error && works.length === 0" class="text-center text-muted py-5">
+    No se encontraron {{ selectedWorkFamily === 'ALL' ? 'trabajos' : selectedWorkFamily.toLowerCase() }}.
+  </div>
+</div>

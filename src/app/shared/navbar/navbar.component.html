@@ -1,0 +1,88 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container-fluid">
+
+    <!-- Marca -->
+    <a class="navbar-brand fw-bold" href="#" (click)="goHome()">DentalLab</a>
+
+    <!-- Botón hamburguesa -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenedor colapsable -->
+    <div class="collapse navbar-collapse bg-dark d-lg-none" id="navbarSupportedContent">
+      
+      <!-- Sección izquierda -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+        <li class="nav-item">
+          <a class="nav-link" href="#" (click)="goHome()">Inicio</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#" (click)="goToDentists()">Dentistas</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" (click)="goToWorks()">Trabajos</a>
+        </li>
+
+        <!-- Dropdown de Clientes -->
+        <li class="nav-item dropdown">
+          <!-- ✅ SIN (click): Bootstrap maneja el toggle -->
+          <a
+            class="nav-link dropdown-toggle"
+            id="clientesDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+            Clientes
+          </a>
+
+          <!-- Submenú controlado por Angular -->
+          <ul class="dropdown-menu" aria-labelledby="clientesDropdown">
+            <li>
+              <a class="dropdown-item" (click)="goToClients()">Todos</a>
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="goToDentists()">Dentistas</a>
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="goToStudents()">Estudiantes</a>
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="goToTechnicians()">Técnicos</a>
+            </li>
+          </ul>
+        </li>
+
+      </ul>
+
+      <!-- Buscador -->
+      <form class="d-flex me-3" role="search" (submit)="$event.preventDefault()">
+        <input
+          class="form-control me-2 bg-dark text-light border-light"
+          type="search"
+          placeholder="Buscar"
+          aria-label="Buscar" />
+        <button class="btn btn-outline-light" type="submit">Buscar</button>
+      </form>
+
+      <!-- Botón de sesión -->
+      <button
+        class="btn btn-outline-light"
+        type="button"
+        (click)="onLoginLogout()">
+        {{ isLoggedIn ? 'Cerrar sesión' : 'Identificarse' }}
+      </button>
+
+    </div>
+  </div>
+</nav>

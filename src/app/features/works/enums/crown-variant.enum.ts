@@ -1,0 +1,6 @@
+export enum CrownVariant {
+  MONOLITHIC = 'MONOLITHIC',
+  STRATIFIED = 'STRATIFIED',
+  METAL = 'METAL',
+  TEMPORARY = 'TEMPORARY'
+}
