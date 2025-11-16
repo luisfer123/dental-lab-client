@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClientService } from '../../services/client.service';
 import { Client } from '../../models/client.model';
-import { PageModel } from '../../../../shared/models/page.model';
+import { Page } from '../../../../shared/models/page.model';
 
 type ClientFilter = 'all' | 'dentists' | 'students' | 'technicians';
 
@@ -71,7 +71,7 @@ export class ClientListComponent implements OnInit {
     }
 
     request$.subscribe({
-      next: (data: PageModel<Client> | null) => {
+      next: (data: Page<Client> | null) => {
         if (!data) {
           this.clients = [];
           this.totalElements = 0;

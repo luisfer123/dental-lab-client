@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Work } from '../models/work.model';
 import { FullWork } from '../models/full-work.model';
+import { Page } from 'src/app/shared/models/page.model';
 
 @Injectable({ providedIn: 'root' })
 export class WorkService {
@@ -24,40 +25,20 @@ export class WorkService {
     type?: string,
     status?: string,
     clientId?: number
-  ): Observable<Work[]> {
+  ): Observable<Page<Work>> {
+
+    // Build query params
     let params = new HttpParams()
       .set('page', page)
       .set('size', size)
       .set('sort', sort);
-
     if (family) params = params.set('family', family);
     if (type) params = params.set('type', type);
     if (status) params = params.set('status', status);
     if (clientId !== undefined && clientId !== null)
       params = params.set('clientId', clientId.toString());
 
-    return this.http.get<any>(this.baseUrl, { params }).pipe(
-      map((resp) => {
-        if (!resp) return [];
-
-        // ✅ Case 1: Spring Data "Page" (what your backend returns)
-        if (resp.content) {
-          return resp.content;
-        }
-
-        // ✅ Case 2: Spring HATEOAS "_embedded"
-        if (resp._embedded) {
-          const embedded = resp._embedded;
-          const key = Object.keys(embedded)[0];
-          return embedded[key] ?? [];
-        }
-
-        // ✅ Case 3: Plain array fallback
-        if (Array.isArray(resp)) return resp;
-
-        return [];
-      })
-    );
+    return this.http.get<Page<Work>>(this.baseUrl, { params });
   }
 
   /* ==========================================================

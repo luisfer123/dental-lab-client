@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkService } from '../services/work.service';
 import { Work } from '../models/work.model';
+import { Page } from 'src/app/shared/models/page.model';
 
 /** Broad categories of work (work family) */
 type WorkFamily = 'ALL' | 'FIXED_PROSTHESIS' | 'REMOVABLE_PROSTHESIS' | 'FULL_DENTURE';
@@ -88,11 +89,11 @@ export class WorkListComponent implements OnInit {
     this.workService
       .getAll(this.page, this.size, 'createdAt,desc', family, type, status, this.clientId)
       .subscribe({
-        next: (works: Work[]) => {
+        next: (worksPage: Page<Work>) => {
           // Since backend may return paginated or simple array, handle both
-          if (Array.isArray(works)) {
-            this.works = works;
-            this.totalElements = works.length;
+          if (worksPage && Array.isArray(worksPage.content)) {
+            this.works = worksPage.content;
+            this.totalElements = worksPage.totalElements;
             this.totalPages = 1;
           } else {
             this.works = [];
