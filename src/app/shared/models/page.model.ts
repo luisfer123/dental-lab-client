@@ -1,14 +1,14 @@
 /**
  * Generic Page interface matching Spring Data Page<T> structure.
  */
-export interface PageModel<T> {
+export interface Page<T> {
   content: T[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
+  empty?: boolean;
   first?: boolean;
   last?: boolean;
+  number: number;
   numberOfElements?: number;
-  empty?: boolean;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }

@@ -12,6 +12,7 @@ export interface Work {
 
   /** Linked client ID */
   clientId: number;
+  client?: Client;
 
   /** Human-readable labels (from LookupService) */
   familyLabel?: string;
@@ -29,4 +30,19 @@ export interface Work {
 
   /** Optional HATEOAS links */
   _links?: any;
+}
+
+export interface Client {
+  id: number;
+  displayName: string;
+  firstName: string;
+  secondName?: string;
+  lastName: string;
+  secondLastName?: string;
+  primaryEmail?: string;
+  primaryPhone?: string;
+  primaryAddress?: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }

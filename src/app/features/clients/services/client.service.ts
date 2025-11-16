@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Client } from '../models/client.model';
 import { ClientFull } from '../models/client-full.model';
 import { environment } from 'src/environments/environment';
-import { PageModel } from '../../../shared/models/page.model';
+import { Page } from '../../../shared/models/page.model';
 
 @Injectable({ providedIn: 'root' })
 export class ClientService {
@@ -16,8 +16,8 @@ export class ClientService {
   // ---------------------------
   // Existing methods
   // ---------------------------
-  getAllPaged(page = 0, size = 10, sort = 'displayName,asc'): Observable<PageModel<Client>> {
-    return this.http.get<PageModel<Client>>(`${this.apiUrl}?page=${page}&size=${size}&sort=${sort}`);
+  getAllPaged(page = 0, size = 10, sort = 'displayName,asc'): Observable<Page<Client>> {
+    return this.http.get<Page<Client>>(`${this.apiUrl}?page=${page}&size=${size}&sort=${sort}`);
   }
 
   getById(id: number): Observable<Client> {
@@ -44,20 +44,20 @@ export class ClientService {
   // NEW: Profile-based paginated endpoints
   // ---------------------------
 
-  getDentistsPaged(page = 0, size = 10, sort = 'displayName,asc'): Observable<PageModel<Client>> {
-    return this.http.get<PageModel<Client>>(
+  getDentistsPaged(page = 0, size = 10, sort = 'displayName,asc'): Observable<Page<Client>> {
+    return this.http.get<Page<Client>>(
       `${this.profilesUrl}/dentists?page=${page}&size=${size}&sort=${sort}`
     );
   }
 
-  getStudentsPaged(page = 0, size = 10, sort = 'displayName,asc'): Observable<PageModel<Client>> {
-    return this.http.get<PageModel<Client>>(
+  getStudentsPaged(page = 0, size = 10, sort = 'displayName,asc'): Observable<Page<Client>> {
+    return this.http.get<Page<Client>>(
       `${this.profilesUrl}/students?page=${page}&size=${size}&sort=${sort}`
     );
   }
 
-  getTechniciansPaged(page = 0, size = 10, sort = 'displayName,asc'): Observable<PageModel<Client>> {
-    return this.http.get<PageModel<Client>>(
+  getTechniciansPaged(page = 0, size = 10, sort = 'displayName,asc'): Observable<Page<Client>> {
+    return this.http.get<Page<Client>>(
       `${this.profilesUrl}/technicians?page=${page}&size=${size}&sort=${sort}`
     );
   }
