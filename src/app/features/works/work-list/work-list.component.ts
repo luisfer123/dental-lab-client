@@ -114,9 +114,18 @@ export class WorkListComponent implements OnInit {
   ========================================================== */
   onFamilyChange(family?: WorkFamily): void {
     if (family) this.selectedWorkFamily = family;
+
+    if(this.selectedWorkFamily !== 'FIXED_PROSTHESIS') this.resetWorkFamilyFilters();
+    
     this.page = 0;
     this.updateUrlParams();
     this.loadWorks();
+  }
+
+  resetWorkFamilyFilters(): void {
+    this.selectedType = 'ALL';
+    this.selectedStatus = 'ALL';
+    this.searchTerm = '';
   }
 
   onFilterChange(): void {

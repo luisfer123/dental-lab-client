@@ -1,13 +1,20 @@
-<div class="app-container">
-  <app-navbar></app-navbar>
+<!-- NAVBAR (sin contenedor externo para evitar espacio extra) -->
+<app-navbar></app-navbar>
 
-  <div class="main-layout">
-    <aside class="sidebar">
+<!-- LAYOUT PRINCIPAL -->
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- SIDEBAR -->
+    <div class="col-12 col-md-4 col-lg-2 sidebar-col sidebar-container d-flex justify-content-center">
       <app-sidebar></app-sidebar>
-    </aside>
+    </div>
 
-    <main class="content">
+    <!-- CONTENT AREA -->
+    <div class="col-12 col-md-8 col-lg-10 p-3 content-container">
       <router-outlet></router-outlet>
-    </main>
+    </div>
+
   </div>
 </div>
+

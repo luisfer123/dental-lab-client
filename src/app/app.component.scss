@@ -1,0 +1,66 @@
+/* Reduce espacio bajo el navbar */
+@use 'sass:color';
+@import 'base/variables';
+
+app-navbar {
+  display: block;
+  margin-bottom: 0;
+}
+
+/* Sidebar */
+.sidebar-container {
+  min-height: calc(100vh - 56px); // Altura típica del navbar
+  border-right: none;
+  border-left: none;
+  padding: 1rem;
+  background-color: $color-sidebar-bg;
+}
+
+.sidebar-col {
+  background-color: $color-sidebar-bg;  // mismo azul oscuro que la sidebar
+  min-height: 100vh;                    // cubre toda la altura
+  padding: 0;                           // elimina márgenes internos
+  display: flex;
+}
+
+/* Contenedor principal */
+.content-container {
+  padding: 1.5rem;
+  background-color: #fafafa;
+}
+
+/* Evitar márgenes laterales excesivos en desktops */
+.container-fluid {
+  max-width: 100%;
+}
+
+/* En móviles, la sidebar ocupa toda la fila */
+@media (max-width: 768px) {
+  .sidebar-container {
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+}
+
+
+/* Ajustes generales */
+.sidebar-container {
+  min-height: calc(100vh - 56px); // Navbar height
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar-col {
+    justify-content: center;            // centra el contenido horizontalmente
+    padding: 1rem 0;                    // un poco de respiración
+     min-height: auto;                  // ajusta altura automáticamente
+  }
+
+  .sidebar {
+    width: 100%;                        // toma todo el ancho del móvil
+    max-width: 420px;                   // límite estético
+    margin: 0 auto;                     // centrado extra
+    border-radius: 12px;                // opcional
+  }
+}

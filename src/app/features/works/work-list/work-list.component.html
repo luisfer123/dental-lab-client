@@ -1,44 +1,80 @@
-<div class="container mt-4">
-  <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
-    <div class="d-flex align-items-center gap-2">
-      <h2 class="mb-0">Trabajos</h2>
+<div class="container">
+  <div class="container mt-4">
 
-      <!-- Filtro por familia de trabajo -->
-      <select
-        class="form-select form-select-sm w-auto"
-        [(ngModel)]="selectedWorkFamily"
-        (change)="onFamilyChange(selectedWorkFamily)"
-      >
-        <option value="ALL">Todos</option>
-        <option value="FIXED_PROSTHESIS">Prótesis fija</option>
-        <option value="REMOVABLE_PROSTHESIS">Prótesis removible</option>
-        <option value="FULL_DENTURE">Prótesis completa</option>
-      </select>
+    <!-- ============================== -->
+    <!--   ROW 1: Header + Family Filter - New Work Button -->
+    <!-- ============================== -->
+    <div class="row align-items-center mb-3">
+      <div class="col-md-8 d-flex align-items-center gap-3">
+
+        <!-- Título -->
+        <h3 class="mb-0">Trabajos</h3>
+
+        <!-- Filtro por familia de trabajo (con input-group label) -->
+        <div class="input-group input-group-sm w-auto">
+          <span class="input-group-text">Familia</span>
+          <select
+            class="form-select"
+            [(ngModel)]="selectedWorkFamily"
+            (change)="onFamilyChange(selectedWorkFamily)"
+          >
+            <option value="ALL">Todos</option>
+            <option value="FIXED_PROSTHESIS">Prótesis fija</option>
+            <option value="REMOVABLE_PROSTHESIS">Prótesis removible</option>
+            <option value="FULL_DENTURE">Prótesis completa</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="col-md-4 text-end">
+        <!-- New work Button -->
+        <button class="btn btn-sm btn-success" routerLink="/works/new">
+          <i class="bi bi-plus-circle"></i> Nuevo trabajo
+        </button>
+      </div>
     </div>
 
-    <!-- Filtros adicionales -->
-    <div class="d-flex gap-2 mb-3">
-      <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
-        <option value="ALL">Todos los estados</option>
-        <option value="PENDING">Pendiente</option>
-        <option value="IN_PROGRESS">En proceso</option>
-        <option value="DELIVERED">Entregado</option>
-      </select>
+    <!-- ======================================= -->
+    <!--   ROW 2: Additional Filters (Conditional) -->
+    <!-- ======================================= -->
+    <div class="row mb-3" *ngIf="selectedWorkFamily === 'FIXED_PROSTHESIS'">
 
-      <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedType" (change)="onFilterChange()">
-        <option value="ALL">Todos los tipos</option>
-        <option value="CROWN">Corona</option>
-        <option value="BRIDGE">Puente</option>
-        <option value="INLAY">Incrustación</option>
-      </select>
+      <!-- STATUS FILTER -->
+      <div class="col-md-2 d-flex gap-2">
+
+        <div class="input-group input-group-sm w-100">
+          <span class="input-group-text">Estado</span>
+          <select class="form-select"
+                  [(ngModel)]="selectedStatus"
+                  (change)="onFilterChange()">
+            <option value="ALL">Todos los estados</option>
+            <option value="PENDING">Pendiente</option>
+            <option value="IN_PROGRESS">En proceso</option>
+            <option value="DELIVERED">Entregado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TYPE FILTER -->
+      <div class="col-md-2 d-flex gap-2 mt-2 mt-md-0">
+
+        <div class="input-group input-group-sm w-100">
+          <span class="input-group-text">Tipo</span>
+          <select class="form-select"
+                  [(ngModel)]="selectedType"
+                  (change)="onFilterChange()">
+            <option value="ALL">Todos los tipos</option>
+            <option value="CROWN">Corona</option>
+            <option value="BRIDGE">Puente</option>
+            <option value="INLAY">Incrustación</option>
+          </select>
+        </div>
+      </div>
     </div>
-
-    <!-- New work Button -->
-    <button class="btn btn-sm btn-success" routerLink="/works/new">
-      <i class="bi bi-plus-circle"></i> Nuevo trabajo
-    </button>
   </div>
+
+  <div class="container mt-4"></div>
 
   <!-- Cargando -->
   <div *ngIf="loading" class="text-center py-5 text-muted">
@@ -130,4 +166,5 @@
   <div *ngIf="!loading && !error && works.length === 0" class="text-center text-muted py-5">
     No se encontraron {{ selectedWorkFamily === 'ALL' ? 'trabajos' : selectedWorkFamily.toLowerCase() }}.
   </div>
+
 </div>
