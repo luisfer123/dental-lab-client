@@ -51,12 +51,41 @@ export class AuthService {
     private router: Router,
     private zone: NgZone
   ) {
+    this.initSession();
+  }
+
+  /**
+   * 🔥 Inicializa la sesión al arrancar Angular.
+   * Si el access token existe y no está expirado → usarlo.
+   * Si no existe o expiró → intentar silent refresh usando la cookie HttpOnly.
+   */
+  initSession() {
     const token = this.tokens.getAccessToken();
+
     if (token && !isExpired(token)) {
-      this.runInsideZone(() => this.updateUserFromToken(token));
-    } else {
-      this.tokens.clear();
+      console.log('🔐 Access token válido → usuario restaurado');
+      this.updateUserFromToken(token);
+      return;
     }
+
+    console.log('🔄 Access token ausente o expirado → intentando silent refresh...');
+
+    this.refresh().subscribe({
+      next: (newToken) => {
+        if (newToken) {
+          console.log('✅ Silent refresh OK → sesión restaurada');
+          this.setAccessToken(newToken);
+        } else {
+          console.log('❌ Silent refresh devolvió token null → sin sesión');
+          this.user$.next(null);
+        }
+      },
+      error: () => {
+        console.log('💥 Silent refresh falló → limpiando sesión');
+        this.tokens.clear();
+        this.user$.next(null);
+      }
+    });
   }
 
   /** Login */

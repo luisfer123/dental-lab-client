@@ -1,0 +1,38 @@
+<form [formGroup]="crownForm" class="border p-3 rounded bg-light mt-3">
+  <h5 class="mb-3">Detalles de corona</h5>
+
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Diente</label>
+      <input type="text" formControlName="toothNumber" class="form-control" />
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Constitución</label>
+      <select formControlName="constitution" class="form-select">
+        <option value="MONOLITHIC">Monolítico</option>
+        <option value="STRATIFIED">Estratificado</option>
+      </select>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Técnica</label>
+      <select formControlName="buildingTechnique" class="form-select">
+        <option value="DIGITAL">Digital</option>
+        <option value="ANALOG">Analógica</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Material núcleo</label>
+      <input type="number" formControlName="coreMaterialId" class="form-control" />
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Material de recubrimiento</label>
+      <input type="number" formControlName="veneeringMaterialId" class="form-control" />
+    </div>
+  </div>
+</form>

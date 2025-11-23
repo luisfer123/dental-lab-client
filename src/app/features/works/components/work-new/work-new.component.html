@@ -1,0 +1,124 @@
+<div class="container mt-4">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Nuevo trabajo</h2>
+
+    <button class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-x-circle"></i> Cancelar
+    </button>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="error()" class="alert alert-danger">{{ error() }}</div>
+
+
+  <!-- ============================================================
+       STEP 1 — Choose Family and Type
+  ============================================================ -->
+  <div *ngIf="step() === 1" class="card shadow-sm">
+    <div class="card-body">
+
+      <h4 class="mb-3">Selecciona el tipo de trabajo</h4>
+
+      <form [formGroup]="selectorForm">
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Familia</label>
+            <select class="form-select" formControlName="workFamily">
+              <option value="FIXED_PROSTHESIS">Prótesis fija</option>
+            </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" formControlName="type">
+              <option value="" disabled>Seleccione tipo</option>
+              <option value="CROWN">Corona</option>
+              <option value="BRIDGE">Puente</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+          <button class="btn btn-primary" type="button" (click)="proceedToDetails()">
+            Continuar
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       STEP 2 — Full Form
+  ============================================================ -->
+  <div *ngIf="step() === 2" class="card shadow-sm">
+    <div class="card-body">
+
+      <h4 class="mb-3">Detalles del trabajo</h4>
+
+      <form [formGroup]="baseForm" (ngSubmit)="submit()">
+
+        <!-- Base Fields -->
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Cliente ID</label>
+            <input class="form-control" type="number" formControlName="clientId" />
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Familia</label>
+            <input class="form-control" formControlName="workFamily" readonly />
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tipo</label>
+            <input class="form-control" formControlName="type" readonly />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-8 mb-3">
+            <label class="form-label">Descripción</label>
+            <input type="text" class="form-control" formControlName="description" />
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tono</label>
+            <input type="text" class="form-control" formControlName="shade" />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Notas</label>
+          <textarea class="form-control" rows="3" formControlName="notes"></textarea>
+        </div>
+
+        <!-- Subformularios dinámicos -->
+        <app-crown-form
+          *ngIf="showCrown()"
+          (extensionChange)="onExtensionChange($event)">
+        </app-crown-form>
+
+        <app-bridge-form
+          *ngIf="showBridge()"
+          (extensionChange)="onExtensionChange($event)">
+        </app-bridge-form>
+
+        <!-- Submit -->
+        <div class="d-flex justify-content-end mt-4">
+          <button class="btn btn-primary" type="submit" [disabled]="loading()">
+            Guardar trabajo
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
