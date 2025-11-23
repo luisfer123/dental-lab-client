@@ -17,6 +17,7 @@ export interface Work {
   /** Human-readable labels (from LookupService) */
   familyLabel?: string;
   typeLabel?: string;
+  statusLabel?: string;
 
   /** Descriptive details */
   description?: string;

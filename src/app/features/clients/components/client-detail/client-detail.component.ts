@@ -1,10 +1,23 @@
-import { Component, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  AfterViewInit,
+  DestroyRef,
+  effect,
+  signal,
+  inject
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { ClientService } from '../../services/client.service';
 import { ClientFull } from '../../models/client-full.model';
 
-declare const bootstrap: any; // ✅ usar instancia global
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+declare const bootstrap: any;
 
 @Component({
   selector: 'app-client-detail',
@@ -13,64 +26,120 @@ declare const bootstrap: any; // ✅ usar instancia global
   templateUrl: './client-detail.component.html',
   styleUrls: ['./client-detail.component.scss']
 })
-export class ClientDetailComponent implements OnInit, AfterViewInit {
-  client?: ClientFull;
-  loading = true;
-  error?: string;
-  deleting = false;
-  filterFromList?: string; // ALL | DENTISTS | STUDENTS | TECHNICIANS
-  filterFromPageList?: number; // Number of the list's page it came from
+export class ClientDetailComponent implements AfterViewInit {
 
+  /* ==========================================================
+     INJECTIONS
+  ========================================================== */
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private clientService = inject(ClientService);
+  private destroyRef = inject(DestroyRef);
+
+  /* ==========================================================
+     SIGNAL STATE
+  ========================================================== */
+  client = signal<ClientFull | undefined>(undefined);
+  loading = signal(true);
+  error = signal<string | undefined>(undefined);
+  deleting = signal(false);
+
+  // Query params (regresar a lista correctamente)
+  filterFromList = signal<string>('all');
+  filterFromPageList = signal<number>(0);
+
+  /* ==========================================================
+     MODAL
+  ========================================================== */
   @ViewChild('confirmModal') confirmModalRef!: ElementRef;
   private confirmModal?: any;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private clientService: ClientService
-  ) {}
+  constructor() {
 
-  ngOnInit(): void {
-    this.filterFromList = this.route.snapshot.queryParamMap.get('filter') || 'all';
-    this.filterFromPageList = Number(this.route.snapshot.queryParamMap.get('page')) || 0;
+    /* ==========================================================
+       EFFECT: carga el cliente cuando cambia el ID en la URL
+    ========================================================== */
+    effect((onCleanup) => {
+      const id = Number(this.route.snapshot.paramMap.get('id'));
 
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (id) {
-      this.loadClient(id);
-    } else {
-      this.error = 'Invalid client ID.';
-      this.loading = false;
-    }
+      // ID inválido
+      if (!id) {
+        this.error.set('Invalid client ID.');
+        this.loading.set(false);
+        return;
+      }
+
+      // Obtener query params desde URL
+      this.parseQueryParams(this.route.snapshot.queryParamMap);
+
+      // Iniciar carga
+      this.loading.set(true);
+      this.error.set(undefined);
+
+      const sub = this.clientService
+        .getFullById(id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (data) => {
+            if (!data) {
+              this.error.set('Client not found.');
+            } else {
+              this.client.set(data);
+              this.error.set(undefined);
+            }
+            this.loading.set(false);
+          },
+          error: (err) => {
+            console.error('Error loading client', err);
+            this.error.set('Could not load client information.');
+            this.loading.set(false);
+          }
+        });
+
+      // Cleanup para evitar memory leaks
+      onCleanup(() => sub.unsubscribe());
+
+    }, { allowSignalWrites: true });
   }
 
+   /* ==========================================================
+      PARSE QUERYPARAMS
+    ========================================================== */
+    private parseQueryParams(params: any): void {
+      this.filterFromList.set(params.get('filter') || 'all');
+      this.filterFromPageList.set(Number(params.get('page')) || 0);
+    }
+
+  /* ==========================================================
+     MODAL INIT
+  ========================================================== */
   ngAfterViewInit(): void {
-    if (this.confirmModalRef) {
-      this.confirmModal = new bootstrap.Modal(this.confirmModalRef.nativeElement);
+    if (!this.confirmModalRef) return;
+
+    try {
+      this.confirmModal = new bootstrap.Modal(
+        this.confirmModalRef.nativeElement
+      );
+    } catch (e) {
+      console.warn('Bootstrap modal initialization failed:', e);
     }
   }
 
-  loadClient(id: number): void {
-    this.loading = true;
-    this.clientService.getFullById(id).subscribe({
-      next: (data) => {
-        console.log('Client loaded:', data);
-        this.client = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading client', err);
-        this.error = 'Could not load client information.';
-        this.loading = false;
+  /* ==========================================================
+     NAVIGATION
+  ========================================================== */
+  goBack(): void {
+    this.router.navigate(['/clients'], {
+      queryParams: {
+        filter: this.filterFromList(),
+        page: this.filterFromPageList()
       }
     });
   }
 
-  goBack(): void {
-    this.router.navigate(['/clients'], {
-      queryParams: { filter: this.filterFromList, page: this.filterFromPageList }
-    });
-  }
-
+  /* ==========================================================
+     MODAL HANDLERS
+  ========================================================== */
   openConfirmModal(): void {
     this.confirmModal?.show();
   }
@@ -79,35 +148,53 @@ export class ClientDetailComponent implements OnInit, AfterViewInit {
     this.confirmModal?.hide();
   }
 
+  /* ==========================================================
+     DELETE CLIENT
+  ========================================================== */
   deleteClient(): void {
-    if (!this.client) return;
+    const client = this.client();
+    if (!client || this.deleting()) return;
 
-    this.deleting = true;
-    this.clientService.delete(this.client.id).subscribe({
-      next: () => {
-        this.deleting = false;
-        this.closeConfirmModal();
-        alert('Cliente eliminado correctamente.');
-        this.router.navigate(['/clients'], {
-          queryParams: { filter: this.filterFromList, page: this.filterFromPageList }
-        });
-      },
-      error: (err) => {
-        console.error('Error deleting client', err);
-        alert('No se pudo eliminar el cliente. Intenta nuevamente.');
-        this.deleting = false;
-      }
-    });
+    this.deleting.set(true);
+
+    this.clientService
+      .delete(client.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.deleting.set(false);
+          this.closeConfirmModal();
+          alert('Cliente eliminado correctamente.');
+          this.goBack();
+        },
+        error: (err) => {
+          console.error('Error deleting client', err);
+          alert('No se pudo eliminar el cliente. Intenta nuevamente.');
+          this.deleting.set(false);
+        }
+      });
   }
 
-  // Type guards
+  /* ==========================================================
+     TYPE GUARDS
+  ========================================================== */
   isDentist(profile: any): profile is { type: 'DENTIST'; clinicName?: string } {
     return profile.type === 'DENTIST';
   }
-  isStudent(profile: any): profile is { type: 'STUDENT'; universityName?: string; semester?: string } {
+
+  isStudent(profile: any): profile is {
+    type: 'STUDENT';
+    universityName?: string;
+    semester?: string;
+  } {
     return profile.type === 'STUDENT';
   }
-  isTechnician(profile: any): profile is { type: 'TECHNICIAN'; labName?: string; specialization?: string } {
+
+  isTechnician(profile: any): profile is {
+    type: 'TECHNICIAN';
+    labName?: string;
+    specialization?: string;
+  } {
     return profile.type === 'TECHNICIAN';
   }
 }

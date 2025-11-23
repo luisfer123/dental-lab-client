@@ -1,0 +1,119 @@
+<div class="container mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Detalles del trabajo</h2>
+    <button class="btn btn-outline-secondary btn-sm" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="text-center py-5 text-muted">
+    <div class="spinner-border" role="status"></div>
+    <p class="mt-2">Cargando información...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error()" class="alert alert-danger text-center">
+    {{ error() }}
+  </div>
+
+
+  <!-- ====================================== -->
+  <!--   Work Details (Unified Attributes)    -->
+  <!-- ====================================== -->
+  <div *ngIf="!loading() && !error() && work()" class="card shadow-sm">
+    <div class="card-body">
+
+      <!-- Title -->
+      <h4 class="card-title mb-3">
+        {{ work()!.typeLabel || work()!.base.type }}
+      </h4>
+
+      <div class="row">
+
+        <!-- FAMILY -->
+        <div class="col-md-6 mb-2">
+          <strong>Familia:</strong>
+          <span>{{ work()!.familyLabel || work()!.base.familyLabel }}</span>
+        </div>
+
+        <!-- TYPE -->
+        <div class="col-md-6 mb-2">
+          <strong>Tipo:</strong>
+          <span>{{ work()!.typeLabel || work()!.base.type }}</span>
+        </div>
+
+        <!-- STATUS -->
+        <div class="col-md-6 mb-2">
+          <strong>Estado:</strong>
+          <span class="badge"
+            [ngClass]="{
+              'bg-success': work()!.base.status === 'DELIVERED' || work()!.base.status === 'COMPLETED',
+              'bg-warning': work()!.base.status === 'IN_PROGRESS',
+              'bg-secondary': !work()!.base.status || work()!.base.status === 'PENDING'
+            }">
+            {{ work()!.base.statusLabel || 'Sin estado' }}
+          </span>
+        </div>
+
+        <!-- CLIENT -->
+        <div class="col-md-6 mb-2">
+          <strong>Cliente:</strong>
+          <span>
+            {{ work()!.base.client?.displayName || ('ID ' + work()!.base.clientId) }}
+          </span>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="col-md-6 mb-2">
+          <strong>Descripción:</strong>
+          <span>{{ work()!.base.description || '—' }}</span>
+        </div>
+
+        <!-- SHADE -->
+        <div class="col-md-6 mb-2">
+          <strong>Tono / Color:</strong>
+          <span>{{ work()!.base.shade || '—' }}</span>
+        </div>
+
+        <!-- CREATED DATE -->
+        <div class="col-md-6 mb-2">
+          <strong>Creado:</strong>
+          <span>{{ work()!.base.createdAt | date:'short' }}</span>
+        </div>
+
+        <!-- UPDATED DATE -->
+        <div class="col-md-6 mb-2">
+          <strong>Actualizado:</strong>
+          <span>{{ work()!.base.updatedAt | date:'short' }}</span>
+        </div>
+
+
+
+        <!-- ====================================== -->
+        <!--          EXTENSION DETAILS             -->
+        <!-- ====================================== -->
+        <ng-container *ngIf="work()?.extension">
+
+          <!-- BRIDGE -->
+          <div class="col-md-6 mb-2" *ngIf="work()?.base?.type === 'BRIDGE'">
+            <strong>Tipo de extensión:</strong> Puente
+          </div>
+
+        </ng-container>
+
+
+
+        <!-- NOTES -->
+        <div class="col-md-12 mb-2">
+          <strong>Notas:</strong>
+          <span>{{ work()!.base.notes || '—' }}</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

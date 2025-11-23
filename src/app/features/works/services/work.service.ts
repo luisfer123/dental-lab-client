@@ -71,8 +71,8 @@ export class WorkService {
   /* ==========================================================
      GET BY ID (FullWorkModel)
   ========================================================== */
-  getById(id: number): Observable<FullWork> {
-    return this.http.get<FullWork>(`${this.baseUrl}/${id}`);
+  getFullById(id: number): Observable<FullWork> {
+    return this.http.get<FullWork>(`${this.baseUrl}/${id}/full`);
   }
 
   /* ==========================================================

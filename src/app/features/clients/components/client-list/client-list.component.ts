@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { ClientService } from '../../services/client.service';
 import { Client } from '../../models/client.model';
 import { Page } from '../../../../shared/models/page.model';
@@ -16,125 +17,161 @@ type ClientFilter = 'all' | 'dentists' | 'students' | 'technicians';
   styleUrls: ['./client-list.component.scss']
 })
 export class ClientListComponent implements OnInit {
-  clients: Client[] = [];
-  loading = true;
-  error?: string;
 
-  // Pagination
-  page = 0;
-  size = 10;
-  totalElements = 0;
-  totalPages = 0;
+  /* ==========================================================
+     SIGNAL STATE
+  ========================================================== */
+  clients = signal<Client[]>([]);
+  loading = signal(true);
+  error = signal<string | undefined>(undefined);
 
-  // Filter
-  selectedFilter: ClientFilter = 'all';
+  page = signal(0);
+  size = signal(10);
+  totalElements = signal(0);
+  totalPages = signal(1);
+
+  selectedFilter = signal<ClientFilter>('all');
+
+  /* ==========================================================
+     VALID FILTERS (para validación estricta)
+  ========================================================== */
+  private readonly VALID_FILTERS: ClientFilter[] = [
+    'all', 'dentists', 'students', 'technicians'
+  ];
+
+  /* ==========================================================
+     COMPUTED HELPERS (opcional pero recomendado)
+  ========================================================== */
+  pages = computed(() =>
+    Array.from({ length: this.totalPages() }, (_, i) => i)
+  );
 
   constructor(
-    private clientService: ClientService, 
+    private clientService: ClientService,
     private router: Router,
-    private route: ActivatedRoute) {}
+    private route: ActivatedRoute,
+    private destroyRef: DestroyRef
+  ) {
+    // Efecto reactivo: carga clientes cuando cambia filter/page
+    effect((onCleanup) => {
+      this.loadClients(onCleanup);
+    }, {allowSignalWrites: true});
+  }
 
+  /* ==========================================================
+     INIT
+  ========================================================== */
   ngOnInit(): void {
-    // leer el query param al entrar
-    this.route.queryParamMap.subscribe(params => {
-      const filter = params.get('filter') as ClientFilter | null;
-      const page = Number(params.get('page')) || 0;
-
-      if (filter === 'dentists' || filter === 'students' || filter === 'technicians' || filter === 'all') {
-        this.selectedFilter = filter;
-      } else {
-        this.selectedFilter = 'all';
-      }
-      this.page = page;
-      this.loadClients();
-    });
+    this.parseQueryParams(this.route.snapshot.queryParamMap);
   }
 
-  loadClients(): void {
-    this.loading = true;
-    this.error = undefined;
+  /* ==========================================================
+     PARSE QUERYPARAMS
+  ========================================================== */
+  private parseQueryParams(params: any): void {
+    // Filtrar el valor inicial estrictamente
+    const filterParam = params.get('filter') as ClientFilter;
+    const pageParam = Number(params.get('page')) || 0;
 
-    let request$;
+    this.selectedFilter.set(
+      this.VALID_FILTERS.includes(filterParam)
+        ? filterParam
+        : 'all'
+    );
+    this.page.set(pageParam);
+  }
 
-    switch (this.selectedFilter) {
-      case 'dentists':
-        request$ = this.clientService.getDentistsPaged(this.page, this.size);
-        break;
-      case 'students':
-        request$ = this.clientService.getStudentsPaged(this.page, this.size);
-        break;
-      case 'technicians':
-        request$ = this.clientService.getTechniciansPaged(this.page, this.size);
-        break;
-      default:
-        request$ = this.clientService.getAllPaged(this.page, this.size);
-    }
+  /* ==========================================================
+     LOAD DATA (Reactive)
+  ========================================================== */
+  private loadClients(onCleanup: (fn: () => void) => void): void {
+    this.loading.set(true);
+    this.error.set(undefined);
 
-    request$.subscribe({
-      next: (data: Page<Client> | null) => {
-        if (!data) {
-          this.clients = [];
-          this.totalElements = 0;
-          this.totalPages = 0;
-        } else {
-          this.clients = data.content ?? [];
-          this.totalElements = data.totalElements ?? 0;
-          this.totalPages = data.totalPages ?? 0;
-        }
-        this.loading = false;
+    const filter = this.selectedFilter();
+    const p = this.page();
+    const s = this.size();
+
+    const requestMap: Record<ClientFilter, () => any> = {
+      dentists: () => this.clientService.getDentistsPaged(p, s),
+      students: () => this.clientService.getStudentsPaged(p, s),
+      technicians: () => this.clientService.getTechniciansPaged(p, s),
+      all: () => this.clientService.getAllPaged(p, s)
+    };
+
+    const sub = requestMap[filter]().subscribe({
+      next: (data: Page<Client>) => {
+        this.clients.set(data?.content ?? []);
+        this.totalElements.set(data?.totalElements ?? 0);
+        this.totalPages.set(data?.totalPages ?? 1);
+        this.loading.set(false);
       },
-      error: (err) => {
-        console.error('Error loading clients', err);
-        this.error = 'Could not load clients';
-        this.loading = false;
+      error: () => {
+        this.error.set('Could not load clients');
+        this.loading.set(false);
       }
     });
+
+    // Cleanup para evitar memory leaks en effects
+    onCleanup(() => sub.unsubscribe());
   }
 
-  // Filter change
+  /* ==========================================================
+     FILTER CHANGE
+  ========================================================== */
   onFilterChange(filter: ClientFilter): void {
-    this.selectedFilter = filter;
-    this.page = 0;
-    this.loadClients();
+    this.selectedFilter.set(filter);
+    this.page.set(0);
+    this.updateUrlParams();
   }
 
-  // Navigation
-  goToDetails(id: number): void {
-    this.router.navigate(['/clients', id], {
-      queryParams: { filter: this.selectedFilter, page: this.page }
-    });
-  }
-
-  // Pagination
+  /* ==========================================================
+     PAGINATION
+  ========================================================== */
   nextPage(): void {
-    if (this.page + 1 < this.totalPages) {
-      this.page++;
-      this.loadClients();
+    if (this.page() + 1 < this.totalPages()) {
+      this.page.update(p => p + 1);
       this.updateUrlParams();
     }
   }
 
   prevPage(): void {
-    if (this.page > 0) {
-      this.page--;
-      this.loadClients();
+    if (this.page() > 0) {
+      this.page.update(p => p - 1);
       this.updateUrlParams();
     }
   }
 
   goToPage(p: number): void {
-    if (p >= 0 && p < this.totalPages) {
-      this.page = p;
-      this.loadClients();
+    if (p >= 0 && p < this.totalPages()) {
+      this.page.set(p);
       this.updateUrlParams();
     }
   }
 
+  /* ==========================================================
+     URL SYNC
+  ========================================================== */
   updateUrlParams(): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { filter: this.selectedFilter, page: this.page },
+      queryParams: {
+        filter: this.selectedFilter(),
+        page: this.page(),
+      },
       queryParamsHandling: 'merge'
+    });
+  }
+
+  /* ==========================================================
+     NAVIGATION
+  ========================================================== */
+  goToDetails(id: number): void {
+    this.router.navigate(['/clients', id], {
+      queryParams: {
+        filter: this.selectedFilter(),
+        page: this.page()
+      }
     });
   }
 }
