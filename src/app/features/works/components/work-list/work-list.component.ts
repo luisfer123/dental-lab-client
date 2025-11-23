@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { WorkService } from '../services/work.service';
-import { Work } from '../models/work.model';
+import { WorkService } from '../../services/work.service';
+import { Work } from '../../models/work.model';
 import { Page } from 'src/app/shared/models/page.model';
 
 /** Broad categories of work (work family) */

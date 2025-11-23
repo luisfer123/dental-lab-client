@@ -10,8 +10,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { WorkService } from '../services/work.service';
-import { FullWork } from '../models/full-work.model';
+import { WorkService } from '../../services/work.service';
+import { FullWork } from '../../models/full-work.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
