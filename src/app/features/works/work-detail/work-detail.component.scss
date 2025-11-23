@@ -1,0 +1,77 @@
+/* ===============================================
+   Work Detail Page Styles
+   Matching the style of client-detail.component.scss
+   =============================================== */
+
+/* General container spacing */
+.container {
+  padding-bottom: 4rem;
+}
+
+/* Card styles */
+.card {
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.section-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Labels & Text */
+strong {
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 0.4em 0.6em;
+}
+
+/* Icons */
+.bi {
+  vertical-align: text-bottom;
+}
+
+/* Buttons */
+.btn-danger {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-danger:hover {
+  transform: scale(1.05);
+}
+
+/* Subsection cards (extension content) */
+.extension-card {
+  border-left: 4px solid var(--bs-primary);
+  padding-left: 1rem;
+}
+
+/* Extension separators */
+.extension-header {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Modal styling */
+.modal-content {
+  border-radius: 0.6rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-footer .btn {
+  min-width: 100px;
+}

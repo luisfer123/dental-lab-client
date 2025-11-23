@@ -1,13 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { WorkService } from '../services/work.service';
 import { Work } from '../models/work.model';
 import { Page } from 'src/app/shared/models/page.model';
 
 /** Broad categories of work (work family) */
-type WorkFamily = 'ALL' | 'FIXED_PROSTHESIS' | 'REMOVABLE_PROSTHESIS' | 'FULL_DENTURE';
+type WorkFamily =
+  | 'ALL'
+  | 'FIXED_PROSTHESIS'
+  | 'REMOVABLE_PROSTHESIS'
+  | 'FULL_DENTURE';
+
+const ALLOWED_FAMILIES: WorkFamily[] = [
+  'ALL',
+  'FIXED_PROSTHESIS',
+  'REMOVABLE_PROSTHESIS',
+  'FULL_DENTURE'
+];
 
 @Component({
   selector: 'app-work-list',
@@ -19,164 +31,174 @@ type WorkFamily = 'ALL' | 'FIXED_PROSTHESIS' | 'REMOVABLE_PROSTHESIS' | 'FULL_DE
 export class WorkListComponent implements OnInit {
 
   /* ==========================================================
-     STATE
+     SIGNAL STATE
   ========================================================== */
-  works: Work[] = [];
-  loading = true;
-  error?: string;
+  works = signal<Work[]>([]);
+  loading = signal(true);
+  error = signal<string | undefined>(undefined);
 
-  // Pagination
-  page = 0;
-  size = 10;
-  totalElements = 0;
-  totalPages = 0;
+  page = signal(0);
+  size = signal(10);
+  totalElements = signal(0);
+  totalPages = signal(1);
 
-  // Filters
-  selectedWorkFamily: WorkFamily = 'ALL';
-  selectedType = 'ALL';
-  selectedStatus = 'ALL';
-  searchTerm = '';
-  clientId?: number;
+  selectedWorkFamily = signal<WorkFamily>('ALL');
+  selectedType = signal('ALL');
+  selectedStatus = signal('ALL');
+  searchTerm = signal('');
+  clientId = signal<number | undefined>(undefined);
+
+  /* ==========================================================
+     COMPUTED & HELPERS
+  ========================================================== */
+  isFixed = computed(() => this.selectedWorkFamily() === 'FIXED_PROSTHESIS');
+
+  trackWork = (_: number, item: Work) => item.id;
+  trackIndex = (i: number) => i;
+
+  pages = computed(() =>
+    Array.from({ length: this.totalPages() }, (_, i) => i)
+  );
+
+  getStatusClass(status?: string): string {
+    switch (status) {
+      case 'DELIVERED':
+      case 'COMPLETED':
+        return 'bg-success';
+      case 'IN_PROGRESS':
+        return 'bg-warning';
+      case 'PENDING':
+      default:
+        return 'bg-secondary';
+    }
+  }
 
   constructor(
     private workService: WorkService,
     private router: Router,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+    private destroyRef: DestroyRef
+  ) {
+    // Efecto reactivo que solo recarga datos
+    effect((onCleanup) => {
+      this.fetchWorks(onCleanup);
+    }, {allowSignalWrites: true});
+  }
 
   /* ==========================================================
      INIT
   ========================================================== */
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe(params => {
-      const familyParam = params.get('family');
-      const family = (familyParam?.toUpperCase() as WorkFamily) || 'ALL';
-      const page = Number(params.get('page')) || 0;
-      const type = params.get('type');
-      const status = params.get('status');
-      const search = params.get('search');
-      const clientId = params.get('clientId');
-
-      // Apply values to component state
-      if (['ALL', 'FIXED_PROSTHESIS', 'REMOVABLE_PROSTHESIS', 'FULL_DENTURE'].includes(family)) {
-        this.selectedWorkFamily = family as WorkFamily;
-      } else {
-        this.selectedWorkFamily = 'ALL';
-      }
-
-      this.page = page;
-      if (status) this.selectedStatus = status;
-      if (type) this.selectedType = type;
-      if (search) this.searchTerm = search;
-      if (clientId) this.clientId = +clientId;
-
-      this.loadWorks();
-    });
+    const params = this.route.snapshot.queryParamMap;
+    this.parseQueryParams(params);
   }
 
   /* ==========================================================
-     LOAD DATA
+     PARSE QUERYPARAMS
   ========================================================== */
-  loadWorks(): void {
-    this.loading = true;
-    this.error = undefined;
+  private parseQueryParams(params: any): void {
+    const familyParam = params.get('family')?.toUpperCase() as WorkFamily;
+    this.selectedWorkFamily.set(
+      ALLOWED_FAMILIES.includes(familyParam) ? familyParam : 'ALL'
+    );
 
-    // The back end does not support filtering by 'ALL', so we pass undefined
-    const family = this.selectedWorkFamily !== 'ALL' ? this.selectedWorkFamily : undefined;
-    const type = this.selectedType !== 'ALL' ? this.selectedType : undefined;
-    const status = this.selectedStatus !== 'ALL' ? this.selectedStatus : undefined;
+    this.page.set(Number(params.get('page')) || 0);
 
-    this.workService
-      .getAll(this.page, this.size, 'createdAt,desc', family, type, status, this.clientId)
+    this.selectedType.set(params.get('type') || 'ALL');
+    this.selectedStatus.set(params.get('status') || 'ALL');
+    this.searchTerm.set(params.get('search') || '');
+
+    const cid = params.get('clientId');
+    this.clientId.set(cid && cid !== 'null' ? +cid : undefined);
+  }
+
+  /* ==========================================================
+     LOAD WORKS (Reactive with cleanup)
+  ========================================================== */
+  private fetchWorks(onCleanup: (fn: () => void) => void): void {
+    this.loading.set(true);
+    this.error.set(undefined);
+
+    const family =
+      this.selectedWorkFamily() !== 'ALL' ? this.selectedWorkFamily() : undefined;
+    const type =
+      this.selectedType() !== 'ALL' ? this.selectedType() : undefined;
+    const status =
+      this.selectedStatus() !== 'ALL' ? this.selectedStatus() : undefined;
+
+    const p = this.page();
+    const s = this.size();
+
+    const sub = this.workService
+      .getAll(p, s, 'createdAt,desc', family, type, status, this.clientId())
       .subscribe({
-        next: (worksPage: Page<Work>) => {
-          // Since backend may return paginated or simple array, handle both
-          if (worksPage && Array.isArray(worksPage.content)) {
-            this.works = worksPage.content;
-            this.totalElements = worksPage.totalElements;
-            this.totalPages = 1;
-          } else {
-            this.works = [];
-            this.totalElements = 0;
-            this.totalPages = 0;
-          }
-          this.loading = false;
+        next: (data: Page<Work>) => {
+          this.works.set(data?.content ?? []);
+          this.totalElements.set(data?.totalElements ?? 0);
+          this.totalPages.set(data?.totalPages ?? 1);
+          this.loading.set(false);
         },
-        error: (err) => {
-          console.error('Error loading works', err);
-          this.error = 'No se pudieron cargar los trabajos.';
-          this.loading = false;
+        error: () => {
+          this.loading.set(false);
+          this.error.set('No se pudieron cargar los trabajos.');
         }
       });
+
+    // Cleanup de la suscripción si el effect se vuelve a ejecutar
+    onCleanup(() => sub.unsubscribe());
   }
 
   /* ==========================================================
      FILTERS
   ========================================================== */
-  onFamilyChange(family?: WorkFamily): void {
-    if (family) this.selectedWorkFamily = family;
+  onFamilyChange(family: WorkFamily): void {
+    this.selectedWorkFamily.set(family);
+    this.page.set(0);
 
-    if(this.selectedWorkFamily !== 'FIXED_PROSTHESIS') this.resetWorkFamilyFilters();
-    
-    this.page = 0;
+    if (family !== 'FIXED_PROSTHESIS') {
+      this.resetWorkFamilyFilters();
+    }
+
     this.updateUrlParams();
-    this.loadWorks();
   }
 
   resetWorkFamilyFilters(): void {
-    this.selectedType = 'ALL';
-    this.selectedStatus = 'ALL';
-    this.searchTerm = '';
+    this.selectedType.set('ALL');
+    this.selectedStatus.set('ALL');
+    this.searchTerm.set('');
   }
 
   onFilterChange(): void {
-    this.page = 0;
+    this.page.set(0);
     this.updateUrlParams();
-    this.loadWorks();
   }
 
   onSearch(): void {
-    this.page = 0;
+    this.page.set(0);
     this.updateUrlParams();
-    this.loadWorks();
-  }
-
-  /* ==========================================================
-     NAVIGATION
-  ========================================================== */
-  goToDetails(id: number): void {
-    this.router.navigate(['/works', id], {
-      queryParams: {
-        family: this.selectedWorkFamily,
-        page: this.page
-      }
-    });
   }
 
   /* ==========================================================
      PAGINATION
   ========================================================== */
   nextPage(): void {
-    if (this.page + 1 < this.totalPages) {
-      this.page++;
+    if (this.page() + 1 < this.totalPages()) {
+      this.page.update(p => p + 1);
       this.updateUrlParams();
-      this.loadWorks();
     }
   }
 
   prevPage(): void {
-    if (this.page > 0) {
-      this.page--;
+    if (this.page() > 0) {
+      this.page.update(p => p - 1);
       this.updateUrlParams();
-      this.loadWorks();
     }
   }
 
   goToPage(p: number): void {
-    if (p >= 0 && p < this.totalPages) {
-      this.page = p;
+    if (p >= 0 && p < this.totalPages()) {
+      this.page.set(p);
       this.updateUrlParams();
-      this.loadWorks();
     }
   }
 
@@ -187,14 +209,26 @@ export class WorkListComponent implements OnInit {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
-        family: this.selectedWorkFamily,
-        page: this.page,
-        type: this.selectedType !== 'ALL' ? this.selectedType : null,
-        status: this.selectedStatus !== 'ALL' ? this.selectedStatus : null,
-        search: this.searchTerm?.trim() || null,
-        clientId: this.clientId ?? null
+        family: this.selectedWorkFamily(),
+        page: this.page(),
+        type: this.selectedType() !== 'ALL' ? this.selectedType() : null,
+        status: this.selectedStatus() !== 'ALL' ? this.selectedStatus() : null,
+        search: this.searchTerm().trim() || null,
+        clientId: this.clientId() ?? null
       },
       queryParamsHandling: 'merge'
+    });
+  }
+
+  /* ==========================================================
+     NAVIGATION
+  ========================================================== */
+  goToDetails(id: number): void {
+    this.router.navigate(['/works', id], {
+      queryParams: {
+        family: this.selectedWorkFamily(),
+        page: this.page()
+      }
     });
   }
 
@@ -202,6 +236,6 @@ export class WorkListComponent implements OnInit {
      REFRESH
   ========================================================== */
   reload(): void {
-    this.loadWorks();
+    this.fetchWorks(() => {});
   }
 }

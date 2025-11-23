@@ -1,37 +1,32 @@
-import { BridgeWork } from './bridge-work.model';
-import { CrownWork } from './crown-work.model';
 import { Work } from './work.model';
 
+export interface WorkExtension {
+  crownWork?: CrownWork;
+  bridgeWork?: BridgeWork;
+  inlayWork?: InlayWork;
+  // ... otros tipos futuros
+}
 
-/**
- * Represents a complete work entity combining the base WorkModel
- * with its specific extension (CrownWork, BridgeWork, etc.).
- *
- * Mirrors backend: com.dentallab.api.model.FullWorkModel
- */
+export interface CrownWork {
+}
+
+export interface BridgeWork {
+  // agrega aquí campos específicos de Puente
+}
+
+export interface InlayWork {
+  // agrega aquí campos de Incrustación
+}
+
 export interface FullWork {
-  /** Base data from WorkModel */
-  base: Work;
+  id: number;
+  base: Work;          // WorkModel
+  extension?: WorkExtension;
 
-  /** Work family code (e.g. FIXED_PROSTHESIS) */
   workFamily: string;
-
-  /** Work type code (e.g. CROWN, BRIDGE, INLAY, etc.) */
   type: string;
-
-  /** Readable labels resolved via LookupService */
   familyLabel?: string;
   typeLabel?: string;
 
-  /** Polymorphic subtype model (depending on work type) */
-  extension?: WorkExtension;
-
-  /** Optional hypermedia links if backend uses HATEOAS */
   _links?: any;
 }
-
-/**
- * Union type for all possible work extensions.
- * Extend this as new types (InlayWork, OnlayWork, etc.) are added.
- */
-export type WorkExtension = CrownWork | BridgeWork;
