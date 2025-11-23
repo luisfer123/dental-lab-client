@@ -1,0 +1,57 @@
+<form [formGroup]="bridgeForm" class="border p-3 rounded bg-light mt-3">
+  <h5 class="mb-3">Detalles del puente</h5>
+
+  <div class="row">
+
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Número de tramos</label>
+      <input type="number" class="form-control" formControlName="spanCount" />
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Tipo de conector</label>
+      <select class="form-select" formControlName="connectorType">
+        <option value="STANDARD">Estándar</option>
+        <option value="REDUCED">Reducido</option>
+        <option value="OVATE">Ovate</option>
+      </select>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Diseño póntico</label>
+      <select class="form-select" formControlName="ponticDesign">
+        <option value="OVATE">Ovate</option>
+        <option value="RIDGE_LAP">Ridge-Lap</option>
+        <option value="MODIFIED_RIDGE_LAP">Modificado</option>
+        <option value="SANITARY">Sanitario</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Material retenedor</label>
+      <input type="number" class="form-control" formControlName="retainerMaterialId" />
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Material póntico</label>
+      <input type="number" class="form-control" formControlName="ponticMaterialId" />
+    </div>
+
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-12 mb-3">
+      <label class="form-label">Dientes involucrados</label>
+      <input type="text" class="form-control"
+             placeholder="Ej. 11-12-13"
+             formControlName="teethInvolved" />
+    </div>
+
+  </div>
+
+</form>
