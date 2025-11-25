@@ -3,8 +3,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Work } from '../models/work.model';
-import { FullWork } from '../models/full-work.model';
+import { FullWork, WorkExtensionModel } from '../models/full-work.model';
 import { Page } from 'src/app/shared/models/page.model';
+import { CreateWorkRequest } from '../models/create-work-request';
 
 @Injectable({ providedIn: 'root' })
 export class WorkService {
@@ -75,12 +76,20 @@ export class WorkService {
     return this.http.get<FullWork>(`${this.baseUrl}/${id}/full`);
   }
 
-  /* ==========================================================
-     CREATE BASE WORK
-  ========================================================== */
-  create(work: Partial<Work>): Observable<Work> {
-    return this.http.post<Work>(this.baseUrl, work);
-  }
+  /* ============================================================
+     CREATE (Polymorphic)
+  ============================================================ */
+  /**
+   * Create a new work (base + extension)
+   * Payload example:
+   * {
+   *   base: Work
+   *   extension: { type: "CROWN", ... }
+   * }
+   */
+  create(payload: CreateWorkRequest): Observable<FullWork> {
+      return this.http.post<FullWork>(`${this.baseUrl}`, payload);
+    }
 
   /* ==========================================================
      UPDATE BASE WORK

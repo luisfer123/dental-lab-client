@@ -12,10 +12,137 @@
   <!-- ERROR -->
   <div *ngIf="error()" class="alert alert-danger">{{ error() }}</div>
 
+  <!-- ============================================================
+        STEP 0 — Search Client (with pagination)
+    ============================================================ -->
+  <div *ngIf="step() === 0" class="card shadow-sm p-3">
+
+    <h4 class="mb-3">Seleccionar cliente</h4>
+
+    <!-- Search input -->
+    <input type="text"
+           class="form-control"
+           placeholder="Buscar por nombre, email o teléfono..."
+           [value]="searchTerm()"
+           (input)="searchClients($any($event.target).value)">
+
+    <!-- Loading -->
+    <div *ngIf="searchLoading()" class="text-muted small mt-2">
+      Buscando...
+    </div>
+
+    <!-- Results Table -->
+    <table *ngIf="clientPage()?.content?.length"
+           class="table table-hover table-sm mt-3">
+
+      <thead class="table-light">
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th style="width:120px;">Acción</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let c of clientPage()!.content">
+          <td>{{ c.displayName }}</td>
+          <td>{{ c.primaryEmail }}</td>
+          <td>{{ c.primaryPhone }}</td>
+          <td>
+            <button class="btn btn-primary btn-sm"
+                    (click)="selectClient(c)">
+              Elegir
+            </button>
+          </td>
+        </tr>
+      </tbody>
+
+    </table>
+
+    <!-- Empty state -->
+    <div *ngIf="!searchLoading() && clientPage() && clientPage()!.content.length === 0"
+         class="alert alert-light border text-center mt-3">
+      No se encontraron clientes.
+    </div>
+
+    <!-- Pagination -->
+    <nav *ngIf="clientPage() && clientPage()!.totalPages > 1"
+         class="d-flex justify-content-center mt-2">
+
+      <ul class="pagination pagination-sm mb-0">
+
+        <li class="page-item"
+            [class.disabled]="searchPage() === 0">
+          <a class="page-link"
+             href="#"
+             (click)="goToSearchPage(searchPage() - 1); $event.preventDefault()">
+            «
+          </a>
+        </li>
+
+        <li class="page-item"
+            *ngFor="let p of [].constructor(clientPage()!.totalPages); let i = index"
+            [class.active]="i === searchPage()">
+          <a class="page-link"
+             href="#"
+             (click)="goToSearchPage(i); $event.preventDefault()">
+             {{ i + 1 }}
+          </a>
+        </li>
+
+        <li class="page-item"
+            [class.disabled]="searchPage() + 1 >= clientPage()!.totalPages">
+          <a class="page-link"
+             href="#"
+             (click)="goToSearchPage(searchPage() + 1); $event.preventDefault()">
+            »
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+
+    <!-- Selected client details (readonly form) -->
+    <div *ngIf="selectedClient()" class="card mt-3 shadow-sm border">
+    <div class="card-body">
+
+        <h5 class="mb-3">Cliente seleccionado</h5>
+
+        <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Nombre</label>
+            <input class="form-control" [value]="selectedClient()!.displayName" disabled />
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" [value]="selectedClient()!.primaryEmail" disabled />
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Cliente ID</label>
+            <input class="form-control" [value]="selectedClient()!.id" disabled />
+        </div>
+        </div>
+
+    </div>
+    </div>
+
+
+    <div class="d-flex justify-content-end mt-3">
+      <button class="btn btn-primary"
+              (click)="goToStep1()"
+              [disabled]="!selectedClient()">
+        Continuar
+      </button>
+    </div>
+
+  </div>
 
   <!-- ============================================================
        STEP 1 — Choose Family and Type
-  ============================================================ -->
+    ============================================================ -->
   <div *ngIf="step() === 1" class="card shadow-sm">
     <div class="card-body">
 
@@ -41,10 +168,14 @@
           </div>
         </div>
 
-        <div class="d-flex justify-content-end mt-3">
-          <button class="btn btn-primary" type="button" (click)="proceedToDetails()">
-            Continuar
-          </button>
+        <div class="d-flex justify-content-between mt-3">
+            <button type="button" class="btn btn-outline-secondary" (click)="goBackToStep0()">
+                <i class="bi bi-arrow-left"></i> Atrás
+            </button>
+
+            <button class="btn btn-primary" type="button" (click)="proceedToDetails()">
+                Continuar
+            </button>
         </div>
 
       </form>
@@ -55,21 +186,42 @@
 
   <!-- ============================================================
        STEP 2 — Full Form
-  ============================================================ -->
+    ============================================================ -->
   <div *ngIf="step() === 2" class="card shadow-sm">
     <div class="card-body">
 
       <h4 class="mb-3">Detalles del trabajo</h4>
 
+      <!-- Selected Client Summary -->
+      <div class="card mb-4 border-info">
+      <div class="card-body">
+          <h5 class="card-title text-info mb-3">
+          <i class="bi bi-person-circle me-2"></i>Cliente
+          </h5>
+
+          <div class="row">
+          <div class="col-md-4 mb-3">
+              <label class="form-label">Nombre</label>
+              <input class="form-control" [value]="selectedClient()!.displayName" disabled />
+          </div>
+
+          <div class="col-md-4 mb-3">
+              <label class="form-label">Email</label>
+              <input class="form-control" [value]="selectedClient()!.primaryEmail" disabled />
+          </div>
+
+          <div class="col-md-4 mb-3">
+              <label class="form-label">Cliente ID</label>
+              <input class="form-control" [value]="selectedClient()!.id" disabled />
+          </div>
+        </div>
+      </div>
+    </div>
+
       <form [formGroup]="baseForm" (ngSubmit)="submit()">
 
         <!-- Base Fields -->
         <div class="row">
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Cliente ID</label>
-            <input class="form-control" type="number" formControlName="clientId" />
-          </div>
-
           <div class="col-md-4 mb-3">
             <label class="form-label">Familia</label>
             <input class="form-control" formControlName="workFamily" readonly />
@@ -109,11 +261,19 @@
           (extensionChange)="onExtensionChange($event)">
         </app-bridge-form>
 
-        <!-- Submit -->
-        <div class="d-flex justify-content-end mt-4">
-          <button class="btn btn-primary" type="submit" [disabled]="loading()">
-            Guardar trabajo
-          </button>
+        <div class="d-flex justify-content-between mt-4">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="goBackToStep1()">
+                <i class="bi bi-arrow-left"></i> Atrás
+            </button>
+
+            <!-- Submit -->
+            <button class="btn btn-primary"
+                    type="submit"
+                    [disabled]="loading()">
+                Guardar trabajo
+            </button>
         </div>
 
       </form>

@@ -5,6 +5,7 @@ import { Client } from '../models/client.model';
 import { ClientFull } from '../models/client-full.model';
 import { environment } from 'src/environments/environment';
 import { Page } from '../../../shared/models/page.model';
+import { ClientSummary } from '../models/client-summary';
 
 @Injectable({ providedIn: 'root' })
 export class ClientService {
@@ -26,6 +27,12 @@ export class ClientService {
 
   getFullById(id: number): Observable<ClientFull> {
     return this.http.get<ClientFull>(`${this.apiUrl}/${id}/full`);
+  }
+
+  search(query: string, page = 0, size = 10): Observable<Page<ClientSummary>> {
+    return this.http.get<Page<ClientSummary>>(`${this.apiUrl}/search`, { 
+      params: {query: query, page: page, size: size} 
+    });
   }
 
   create(client: Client): Observable<Client> {
@@ -61,4 +68,5 @@ export class ClientService {
       `${this.profilesUrl}/technicians?page=${page}&size=${size}&sort=${sort}`
     );
   }
+
 }

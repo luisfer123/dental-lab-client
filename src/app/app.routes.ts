@@ -15,6 +15,6 @@ export const routes: Routes = [
         path: 'works',
         loadChildren: () => 
             import('./features/works/work.routes')
-            .then(m => m.Work_ROUTES)
+            .then(m => m.WORK_ROUTES)
     }
 ];

@@ -1,11 +1,11 @@
 import {
-  HttpInterceptorFn,
   HttpErrorResponse,
+  HttpEvent,
   HttpHandlerFn,
-  HttpEvent
+  HttpInterceptorFn
 } from '@angular/common/http';
+
 import { inject } from '@angular/core';
-import { AuthService } from '../auth/auth.service';
 import {
   BehaviorSubject,
   catchError,
@@ -14,9 +14,9 @@ import {
   switchMap,
   take,
   throwError,
-  of,
   Observable
 } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
 import { Router } from '@angular/router';
 
 let refreshing = false;
@@ -26,34 +26,35 @@ export const errorInterceptor: HttpInterceptorFn = (
   req,
   next: HttpHandlerFn
 ): Observable<HttpEvent<any>> => {
+
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  console.log('🧩 [Error Interceptor] Listening on →', req.url);
-
   return next(req).pipe(
     catchError((error: HttpErrorResponse): Observable<HttpEvent<any>> => {
-      console.warn('🚨 [Error Interceptor] caught →', error.status, req.url);
 
-      // Si no es 401, pasa el error tal cual
-      if (
-        error.status !== 401 ||
+      const isAuthEndpoint =
         req.url.includes('/auth/login') ||
         req.url.includes('/auth/refresh') ||
-        req.url.includes('/auth/logout')
-      ) {
+        req.url.includes('/auth/logout');
+
+      // ⛔ SOLO intentar refresh si el error es 401 exacto
+      if (error.status !== 401 || isAuthEndpoint) {
         return throwError(() => error);
       }
 
-      console.log('🔒 Detected 401 for →', req.url);
+      console.warn('🔐 401 detected → attempting refresh');
 
+      // ---------------------------
+      // WAIT IF REFRESH IS RUNNING
+      // ---------------------------
       if (refreshing) {
-        console.log('⏳ Waiting for active refresh...');
+        console.log('⏳ Waiting for ongoing refresh...');
+
         return refreshSubject.pipe(
-          filter((token): token is string => token !== null),
+          filter((token) => token !== null),
           take(1),
           switchMap((token) => {
-            console.log('✅ Received new token from another refresh');
             const cloned = req.clone({
               setHeaders: { Authorization: `Bearer ${token}` }
             });
@@ -62,38 +63,40 @@ export const errorInterceptor: HttpInterceptorFn = (
         );
       }
 
+      // ---------------------------
+      // PERFORM NEW REFRESH
+      // ---------------------------
       refreshing = true;
       refreshSubject.next(null);
-      console.log('🔄 Starting refresh flow...');
 
       return auth.refresh().pipe(
         switchMap((newToken) => {
-          console.log('✅ Refresh completed →', newToken ? 'YES' : 'NO');
           if (!newToken) {
+            console.warn('❌ Refresh returned null → logging out');
             auth.logout().subscribe();
             router.navigate(['/auth/login']);
             return throwError(() => error);
           }
 
+          console.log('✅ Refresh success, retrying request');
+
           auth.setAccessToken(newToken);
           refreshSubject.next(newToken);
 
-          const cloned = req.clone({
+          const retryReq = req.clone({
             setHeaders: { Authorization: `Bearer ${newToken}` }
           });
-          console.log('🔁 Retrying →', cloned.url);
 
-          return next(cloned);
+          return next(retryReq);
         }),
         catchError((refreshErr) => {
-          console.error('💥 Refresh failed:', refreshErr);
+          console.error('💥 Refresh FAILED:', refreshErr);
           auth.logout().subscribe();
           router.navigate(['/auth/login']);
           return throwError(() => refreshErr);
         }),
         finalize(() => {
           refreshing = false;
-          console.log('🔚 Refresh cycle complete');
         })
       );
     })
