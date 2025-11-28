@@ -69,6 +69,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.router.navigate(['/works']);
   }
 
+  goToOrders(): void {
+    this.router.navigate(['/orders'])
+  }
+
   private initializeBootstrapDropdowns(): void {
     const toggles = document.querySelectorAll('[data-bs-toggle="dropdown"]');
     toggles.forEach(t => bootstrap.Dropdown.getOrCreateInstance(t));

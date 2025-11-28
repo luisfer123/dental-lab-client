@@ -232,6 +232,10 @@ export class WorkListComponent implements OnInit {
     });
   }
 
+  goToNewWork(): void {
+    this.router.navigate(['/works/new']);
+  }
+
   /* ==========================================================
      REFRESH
   ========================================================== */

@@ -1,124 +1,136 @@
-<div class="container">
-  <div class="container mt-4">
+<div class="container mt-4">
 
-    <!-- ============================== -->
-    <!--   ROW 1: Header + Family Filter - New Work Button -->
-    <!-- ============================== -->
-    <div class="row align-items-center mb-3">
-      <div class="col-md-8 d-flex align-items-center gap-3">
+  <!-- ============================== -->
+  <!--   HEADER: Title + Filter + New Work -->
+  <!-- ============================== -->
+  <div class="row align-items-center mb-3">
 
-        <!-- Título -->
-        <h3 class="mb-0">Trabajos</h3>
+    <!-- LEFT SIDE -->
+    <div class="col-md-8 d-flex align-items-center gap-3 flex-wrap">
 
-        <!-- Filtro por familia -->
-        <div class="input-group input-group-sm w-auto">
-          <span class="input-group-text">Familia</span>
-          <select
-            class="form-select"
-            [ngModel]="selectedWorkFamily()"
-            (ngModelChange)="selectedWorkFamily.set($event); onFamilyChange($event)"
-          >
-            <option value="ALL">Todos</option>
-            <option value="FIXED_PROSTHESIS">Prótesis fija</option>
-            <option value="REMOVABLE_PROSTHESIS">Prótesis removible</option>
-            <option value="FULL_DENTURE">Prótesis completa</option>
-          </select>
-        </div>
+      <!-- Title -->
+      <h3 class="mb-0">Trabajos</h3>
 
-      </div>
+      <!-- Family Filter -->
+      <div class="input-group input-group-sm w-auto">
+        <span class="input-group-text">Familia</span>
 
-      <div class="col-md-4 text-end">
-        <button class="btn btn-sm btn-success" routerLink="/works/new">
-          <i class="bi bi-plus-circle"></i> Nuevo trabajo
-        </button>
-      </div>
-    </div>
-
-    <!-- ======================================= -->
-    <!--   ROW 2: Additional Filters (Conditional) -->
-    <!-- ======================================= -->
-    <div class="row mb-3" *ngIf="isFixed()">
-
-      <!-- STATUS FILTER -->
-      <div class="col-md-2 d-flex gap-2">
-        <div class="input-group input-group-sm w-100">
-          <span class="input-group-text">Estado</span>
-          <select
-            class="form-select"
-            [ngModel]="selectedStatus()"
-            (ngModelChange)="selectedStatus.set($event); onFilterChange()"
-          >
-            <option value="ALL">Todos los estados</option>
-            <option value="PENDING">Pendiente</option>
-            <option value="IN_PROGRESS">En proceso</option>
-            <option value="DELIVERED">Entregado</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- TYPE FILTER -->
-      <div class="col-md-2 d-flex gap-2 mt-2 mt-md-0">
-        <div class="input-group input-group-sm w-100">
-          <span class="input-group-text">Tipo</span>
-          <select
-            class="form-select"
-            [ngModel]="selectedType()"
-            (ngModelChange)="selectedType.set($event); onFilterChange()"
-          >
-            <option value="ALL">Todos los tipos</option>
-            <option value="CROWN">Corona</option>
-            <option value="BRIDGE">Puente</option>
-            <option value="INLAY">Incrustación</option>
-          </select>
-        </div>
+        <select
+          class="form-select"
+          [ngModel]="selectedWorkFamily()"
+          (ngModelChange)="selectedWorkFamily.set($event); onFamilyChange($event)"
+        >
+          <option value="ALL">Todos</option>
+          <option value="FIXED_PROSTHESIS">Prótesis fija</option>
+          <option value="REMOVABLE_PROSTHESIS">Prótesis removible</option>
+          <option value="FULL_DENTURE">Prótesis completa</option>
+        </select>
       </div>
 
     </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="col-md-4 text-end">
+      <button type="button" class="btn btn-sm btn-success" (click)="goToNewWork()">
+        <i class="bi bi-plus-circle"></i> Nuevo trabajo
+      </button>
+    </div>
+
   </div>
 
-  <!-- Loader -->
+  <!-- ======================================= -->
+  <!--   CONDITIONAL FILTERS (only for fixed) -->
+  <!-- ======================================= -->
+  <div class="row mb-3" *ngIf="isFixed()">
+
+    <!-- STATUS FILTER -->
+    <div class="col-md-2 mb-2">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">Estado</span>
+        <select
+          class="form-select"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="selectedStatus.set($event); onFilterChange()"
+        >
+          <option value="ALL">Todos los estados</option>
+          <option value="PENDING">Pendiente</option>
+          <option value="IN_PROGRESS">En proceso</option>
+          <option value="DELIVERED">Entregado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TYPE FILTER -->
+    <div class="col-md-2 mb-2">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">Tipo</span>
+        <select
+          class="form-select"
+          [ngModel]="selectedType()"
+          (ngModelChange)="selectedType.set($event); onFilterChange()"
+        >
+          <option value="ALL">Todos los tipos</option>
+          <option value="CROWN">Corona</option>
+          <option value="BRIDGE">Puente</option>
+          <option value="INLAY">Incrustación</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================== -->
+  <!--   LOADING STATE    -->
+  <!-- ================== -->
   <div *ngIf="loading()" class="text-center py-5 text-muted">
     <div class="spinner-border" role="status"></div>
     <p class="mt-2">Cargando {{ selectedWorkFamily() }}...</p>
   </div>
 
-  <!-- Error -->
+  <!-- ================== -->
+  <!--   ERROR STATE      -->
+  <!-- ================== -->
   <div *ngIf="error()" class="alert alert-danger text-center">
     {{ error() }}
   </div>
 
-  <!-- Tabla -->
+  <!-- ================== -->
+  <!--       TABLE        -->
+  <!-- ================== -->
   <div *ngIf="!loading() && !error() && works().length > 0">
+
     <table class="table table-hover align-middle shadow-sm">
       <thead class="table-light">
         <tr>
-          <th scope="col" style="width: 60px;">#</th>
-          <th scope="col">Tipo</th>
-          <th scope="col">Familia</th>
-          <th scope="col">Cliente</th>
-          <th scope="col">Estado</th>
-          <th scope="col" style="width: 140px;">Creado</th>
-          <th scope="col" class="text-end" style="width: 120px;">Acciones</th>
+          <th style="width: 60px;">#</th>
+          <th>Tipo</th>
+          <th>Familia</th>
+          <th>Cliente</th>
+          <th>Estado</th>
+          <th style="width: 140px;">Creado</th>
+          <th class="text-end" style="width: 120px;">Acciones</th>
         </tr>
       </thead>
+
       <tbody>
         <tr *ngFor="let w of works(); let i = index; trackBy: trackWork">
           <th scope="row">{{ i + 1 + page() * size() }}</th>
+
           <td>{{ w.typeLabel || w.type }}</td>
           <td>{{ w.familyLabel || w.workFamily }}</td>
-          <td>{{ w.clientId || '-' }}</td>
+          <td>{{ w.client?.displayName || ('ID ' + w.clientId) }}</td>
 
-          <!-- STATUS BADGE OPTIMIZADO -->
+          <!-- Status -->
           <td>
             <span class="badge" [ngClass]="getStatusClass(w.status)">
-              {{ w.statusLabel || 'Sin estado' }}
+              {{ w.statusLabel || w.status || 'Sin estado' }}
             </span>
           </td>
 
-          <td>
-            {{ w.createdAt | date: 'short' }}</td>
+          <td>{{ w.createdAt | date:'short' }}</td>
+
           <td class="text-end">
-            <button class="btn btn-sm btn-outline-primary me-1" (click)="goToDetails(w.id!)">
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="goToDetails(w.id)">
               <i class="bi bi-eye"></i>
             </button>
           </td>
@@ -126,13 +138,13 @@
       </tbody>
     </table>
 
-    <!-- Información de página -->
+    <!-- Pagination info -->
     <p class="text-muted small text-center mb-3">
-      Página {{ page() + 1 }} de {{ totalPages() || 1 }} —
-      {{ totalElements() || works().length }} trabajos en total
+      Página {{ page() + 1 }} de {{ totalPages() || 1 }}
+      — {{ totalElements() }} trabajos en total
     </p>
 
-    <!-- Paginación optimizada -->
+    <!-- Pagination -->
     <nav *ngIf="totalPages() > 1" class="d-flex justify-content-center">
       <ul class="pagination pagination-sm mb-0">
 
@@ -156,10 +168,16 @@
 
       </ul>
     </nav>
+
   </div>
 
-  <!-- Vacío -->
-  <div *ngIf="!loading() && !error() && works().length === 0" class="text-center text-muted py-5">
+  <!-- ================== -->
+  <!--     EMPTY STATE    -->
+  <!-- ================== -->
+  <div
+    *ngIf="!loading() && !error() && works().length === 0"
+    class="text-center text-muted py-5"
+  >
     No se encontraron
     {{
       selectedWorkFamily() === 'ALL'

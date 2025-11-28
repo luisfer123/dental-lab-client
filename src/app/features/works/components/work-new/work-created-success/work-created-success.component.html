@@ -1,0 +1,29 @@
+<div class="card border-success mt-4">
+  <div class="card-body">
+    <h5 class="card-title text-success">
+      <i class="bi bi-check-circle me-2"></i>
+      Trabajo guardado correctamente
+    </h5>
+
+    <p class="card-text mb-3">
+      La orden <strong>#{{ orderId }}</strong>
+      <span *ngIf="clientName"> para <strong>{{ clientName }}</strong></span>
+      ya tiene este trabajo registrado.
+    </p>
+
+    <div class="d-flex flex-wrap gap-2">
+      <button type="button"
+              class="btn btn-primary"
+              (click)="onAddAnother()">
+        <i class="bi bi-plus-circle me-1"></i>
+        Agregar otro trabajo a esta orden
+      </button>
+
+      <button type="button"
+              class="btn btn-outline-secondary"
+              (click)="onGoToOrder()">
+        Ver orden
+      </button>
+    </div>
+  </div>
+</div>
