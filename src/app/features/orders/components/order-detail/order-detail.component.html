@@ -1,0 +1,126 @@
+<div class="container mt-4">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Orden #{{ order()?.id }}</h2>
+
+    <button class="btn btn-secondary" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="error()" class="alert alert-danger">
+    {{ error() }}
+  </div>
+
+  <!-- LOADING -->
+  <div *ngIf="loading()" class="text-muted">Cargando orden...</div>
+
+  <ng-container *ngIf="order() as o">
+
+    <!-- INFO CLIENTE -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h5 class="mb-3">Cliente</h5>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Nombre</label>
+            <input class="form-control" [value]="o.clientName" disabled>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" [value]="o.clientPrimaryEmail" disabled>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Teléfono</label>
+            <input class="form-control" [value]="o.clientPrimaryPhone" disabled>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFO ORDEN -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h5 class="mb-3">Información de la orden</h5>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Fecha recibida</label>
+            <div>{{ o.dateReceived | date:'medium' }}</div>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Fecha prometida</label>
+            <div>{{ o.dueDate ? (o.dueDate | date:'medium') : '-' }}</div>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Estado</label>
+            <div class="fw-bold">{{ o.status }}</div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-primary" (click)="addWorkToOrder()">
+            <i class="bi bi-plus-circle"></i> Agregar trabajo
+          </button>
+
+          <button class="btn btn-success"
+                  [disabled]="o.status === 'DELIVERED'"
+                  (click)="markDelivered()">
+            <i class="bi bi-check2-circle"></i> Marcar como entregada
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- LISTA DE TRABAJOS -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="mb-3">Trabajos en esta orden</h5>
+
+        <div *ngIf="works().length === 0" class="alert alert-info">
+          No hay trabajos en esta orden.
+        </div>
+
+        <table *ngIf="works().length > 0" class="table table-hover table-sm">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
+              <th>Tono</th>
+              <th>Estado</th>
+              <th style="width:100px;">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let w of works()">
+              <td>{{ w.id }}</td>
+              <td>{{ w.typeLabel || w.type }}</td>
+              <td>{{ w.description }}</td>
+              <td>{{ w.shade || '-' }}</td>
+              <td>{{ w.status }}</td>
+              <td>
+                <button class="btn btn-outline-primary btn-sm"
+                        (click)="goToWorkDetail(w.id)">
+                  Ver
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

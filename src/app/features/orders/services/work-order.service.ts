@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "src/environments/environment";
-import { FullWorkOrder } from "../models/full-work-order.model";
+import { FullWorkOrder } from "../../works/models/full-work-order.model";
 
 @Injectable({ providedIn: 'root' })
 export class WorkOrderService {
@@ -25,5 +25,19 @@ export class WorkOrderService {
     ========================================================== */
     getOrder(orderId: number) {
         return this.http.get<FullWorkOrder>(`${this.baseUrl}/${orderId}`);
+    }
+
+    getAll(page: number, size: number, sort: string) {
+        return this.http.get<any>(`${this.baseUrl}?page=${page}&size=${size}&sort=${sort}`);
+    }
+
+    getOrdersByClient(clientId: number, page: number, size: number, sort: string) {
+        return this.http.get<any>(
+            `${this.baseUrl}/client/${clientId}?page=${page}&size=${size}&sort=${sort}`
+        );
+    }
+
+    markAsDelivered(orderId: number) {
+        return this.http.post<FullWorkOrder>(`${this.baseUrl}/${orderId}/deliver`, {});
     }
 }

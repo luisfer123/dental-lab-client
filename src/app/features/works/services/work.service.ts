@@ -104,4 +104,8 @@ export class WorkService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+
+  getWorksByOrder(orderId: number) {
+    return this.http.get<Work[]>(`${this.baseUrl}/works?orderId=${orderId}`);
+  }
 }

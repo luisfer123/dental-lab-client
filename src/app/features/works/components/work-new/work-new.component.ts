@@ -3,8 +3,7 @@ import {
   signal,
   computed,
   inject,
-  OnInit,
-  effect
+  OnInit
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
@@ -20,10 +19,13 @@ import { BridgeFormComponent } from './extension-forms/bridge-form/bridge-form.c
 
 import { Page } from 'src/app/shared/models/page.model';
 import { CreateWorkRequest } from '../../models/create-work-request';
-import { WorkOrderService } from '../../services/work-order.service';
+import { WorkOrderService } from '../../../orders/services/work-order.service';
+import { WorkCreatedSuccessComponent } from './work-created-success/work-created-success.component';
 
 type WorkFamily = 'FIXED_PROSTHESIS';
 type WorkType = 'CROWN' | 'BRIDGE';
+
+type WorkNewMode = 'STANDARD' | 'ADD_TO_ORDER';
 
 @Component({
   selector: 'app-work-new',
@@ -32,12 +34,13 @@ type WorkType = 'CROWN' | 'BRIDGE';
     CommonModule,
     ReactiveFormsModule,
     CrownFormComponent,
-    BridgeFormComponent
+    BridgeFormComponent,
+    WorkCreatedSuccessComponent
   ],
   templateUrl: './work-new.component.html',
   styleUrls: ['./work-new.component.scss']
 })
-export class WorkNewComponent {
+export class WorkNewComponent implements OnInit {
 
   private fb = inject(FormBuilder);
   private router = inject(Router);
@@ -45,6 +48,13 @@ export class WorkNewComponent {
   private workService = inject(WorkService);
   private clientService = inject(ClientService);
   private workOrderService = inject(WorkOrderService);
+
+  /* ============================================================
+     Modo: wizard normal vs agregar a orden existente
+  ============================================================ */
+  mode = signal<WorkNewMode>('STANDARD');
+  orderId = signal<number | null>(null);
+  creationSuccess = signal(false);
 
   /* ============================================================
      Wizard
@@ -63,16 +73,8 @@ export class WorkNewComponent {
 
   // NEW: store entire page object
   clientPage = signal<Page<ClientSummary> | null>(null);
+
   selectedClient = signal<ClientSummary | null>(null);
-
-  /* ============================================================
-     Query params for deciding pre-selected client/order and
-     initial form state.
-
-  ============================================================ */
-
-  clientIdParam = signal<number | null>(null);
-  orderIdParam = signal<number | null>(null);
 
   /* ============================================================
      UI and form state
@@ -98,64 +100,34 @@ export class WorkNewComponent {
     notes: this.fb.control<string | null>(null)
   });
 
-  ngOnInit() {
+  /* ============================================================
+     Lifecycle: leer query params (clientId, orderId)
+  ============================================================ */
+  ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
-      const clientId = Number(params.get('clientId'));
-      const orderId = Number(params.get('orderId'));
+      const clientIdParam = params.get('clientId');
+      const orderIdParam = params.get('orderId');
 
-      this.clientIdParam.set(isNaN(clientId) ? null : clientId);
-      this.orderIdParam.set(isNaN(orderId) ? null : orderId);
+      if (orderIdParam) {
+        const orderId = Number(orderIdParam);
+        this.orderId.set(orderId);
+        this.mode.set('ADD_TO_ORDER');
 
-      // --- ESCENARIO A ---
-      if (clientId && orderId) {
-        this.loadClientAndSkip(clientId);
-        return;
+        if (clientIdParam) {
+          const clientId = Number(clientIdParam);
+          this.clientService.getById(clientId).subscribe({
+            next: c => {
+              this.selectedClient.set(c);
+              this.baseForm.patchValue({ clientId: c.id });
+              this.step.set(1); // saltamos búsqueda de cliente
+            },
+            error: () => this.error.set('No se pudo cargar el cliente para la orden.')
+          });
+        } else {
+          // Fallback: si solo llega orderId, cargamos cliente desde la orden
+          this.loadClientFromOrder(orderId);
+        }
       }
-
-      // --- ESCENARIO B ---
-      if (clientId && !orderId) {
-        this.createOrderForClient(clientId);
-        return;
-      }
-
-      // --- ESCENARIO C ---
-      if (!clientId && orderId) {
-        this.loadClientFromOrder(orderId);
-        return;
-      }
-
-      // --- ESCENARIO D ---
-      // No llega nada, flujo normal (Step 0)
-    });
-  }
-
-  private loadClientAndSkip(clientId: number) {
-    this.clientService.getById(clientId).subscribe({
-      next: c => {
-        this.selectedClient.set(c);
-        this.baseForm.patchValue({ clientId: c.id });
-        this.step.set(1); // Skip Step 0
-      },
-      error: () => this.error.set('No se pudo cargar el cliente.')
-    });
-  }
-
-  private createOrderForClient(clientId: number) {
-    this.clientService.getById(clientId).subscribe({
-      next: c => {
-        this.selectedClient.set(c);
-        this.baseForm.patchValue({ clientId: c.id });
-
-        // Crear orden
-        this.workOrderService.createOrderForClient(clientId).subscribe({
-          next: order => {
-            this.orderIdParam.set(order.id);
-            this.step.set(1);
-          },
-          error: () => this.error.set('No se pudo crear la orden para el cliente.')
-        });
-      },
-      error: () => this.error.set('Cliente no encontrado.')
     });
   }
 
@@ -168,7 +140,8 @@ export class WorkNewComponent {
             this.selectedClient.set(c);
             this.baseForm.patchValue({ clientId: c.id });
             this.step.set(1);
-          }
+          },
+          error: () => this.error.set('No se pudo cargar el cliente para la orden.')
         });
       },
       error: () => this.error.set('No se pudo cargar la orden.')
@@ -291,14 +264,18 @@ export class WorkNewComponent {
     this.loading.set(true);
     this.error.set(null);
 
+    const raw = this.baseForm.getRawValue();
+
     const payload: CreateWorkRequest = {
       base: {
-        clientId: this.baseForm.getRawValue().clientId!,
-        workFamily: this.baseForm.getRawValue().workFamily!,
-        type: this.baseForm.getRawValue().type!,
-        description: this.baseForm.getRawValue().description,
-        shade: this.baseForm.getRawValue().shade,
-        notes: this.baseForm.getRawValue().notes,
+        clientId: raw.clientId!,
+        workFamily: raw.workFamily!,
+        type: raw.type!,
+        description: raw.description,
+        shade: raw.shade,
+        notes: raw.notes,
+        // opcional: si quieres mandar orderId en el payload base
+        // orderId: this.orderId() ?? undefined
       },
       extension: {
         type: this.selectedType()!,
@@ -309,7 +286,14 @@ export class WorkNewComponent {
     this.workService.create(payload).subscribe({
       next: created => {
         this.loading.set(false);
-        this.router.navigate(['/works', created.base.id]);
+
+        if (this.mode() === 'ADD_TO_ORDER' && this.orderId()) {
+          // No navegamos fuera: mostramos la pantalla de éxito
+          this.creationSuccess.set(true);
+        } else {
+          // Comportamiento anterior para modo estándar
+          this.router.navigate(['/works', created.base.id]);
+        }
       },
       error: err => {
         console.error(err);
@@ -348,50 +332,26 @@ export class WorkNewComponent {
     this.step.set(1);
   }
 
+  /* ============================================================
+     Post-submit actions (success component outputs)
+  ============================================================ */
+
+  onAddAnotherWork() {
+    const clientId = this.baseForm.getRawValue().clientId;
+    const orderId = this.orderId();
+
+    if (clientId && orderId) {
+      this.router.navigate(['/works', 'new'], {
+        queryParams: { clientId, orderId }
+      });
+    }
+  }
+
+  onGoToOrder() {
+    const orderId = this.orderId();
+    if (orderId) {
+      this.router.navigate(['/orders', orderId]);
+    }
+  }
+
 }
-
-/* ============================================================
-
- ESCENARIO A — Llega clientId y orderId
-
-  Caso típico cuando el usuario viene de “Agregar trabajo a esta orden”
-  Comportamiento:
-
-  1. Saltar completamente el Step 0 (buscador).
-  2. Cargar el cliente por clientId.
-  3. Cargar la orden por orderId (solo para validar que coincide con el cliente).
-  4. Rellenar clientId en baseForm.
-  5. Ir directo a Step 1.
-
-ESCENARIO B — Llega solo clientId
-
-  El usuario viene de “Agregar nuevo trabajo para este cliente”, pero sin orden.
-  Comportamiento:
-
-  1. Saltar Step 0.
-  2. Cargar cliente por clientId.
-  3. Llamar a backend: crear una nueva orden para ese cliente.
-  4. Guardar el orderId generado.
-  5. Rellenar baseForm.
-  6. Ir a Step 1.
-
-ESCENARIO C — Llega solo orderId
-
-  El usuario viene desde la lista de órdenes → “Agregar trabajo a esta orden”.
-  Comportamiento:
-
-  1. Cargar orden.
-  2. Obtener clientId desde la orden.
-  3. Cargar cliente.
-  4. Saltar Step 0.
-  5. Rellenar clientId en baseForm.
-  6. Ir a Step 1.
-
-  ESCENARIO D — No llega nada (nuevo trabajo desde cero)
-
-    Flujo original
-
-    1. Se muestra Step 0 → buscador de cliente.
-    2. continua todo el flujo normal.
-
-=========================================================== */
