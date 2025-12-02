@@ -2,6 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "src/environments/environment";
 import { FullWorkOrder } from "../../works/models/full-work-order.model";
+import { Work } from "../../works/models/work.model";
 
 @Injectable({ providedIn: 'root' })
 export class WorkOrderService {
@@ -40,4 +41,8 @@ export class WorkOrderService {
     markAsDelivered(orderId: number) {
         return this.http.post<FullWorkOrder>(`${this.baseUrl}/${orderId}/deliver`, {});
     }
+
+  getWorksByOrder(orderId: number) {
+    return this.http.get<Work[]>(`${this.baseUrl}/${orderId}/works`);
+  }
 }

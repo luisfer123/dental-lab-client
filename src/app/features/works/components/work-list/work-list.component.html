@@ -103,8 +103,8 @@
       <thead class="table-light">
         <tr>
           <th style="width: 60px;">#</th>
+          <th>ID</th>
           <th>Tipo</th>
-          <th>Familia</th>
           <th>Cliente</th>
           <th>Estado</th>
           <th style="width: 140px;">Creado</th>
@@ -116,8 +116,8 @@
         <tr *ngFor="let w of works(); let i = index; trackBy: trackWork">
           <th scope="row">{{ i + 1 + page() * size() }}</th>
 
+          <td>{{ w.internalCode }}</td>
           <td>{{ w.typeLabel || w.type }}</td>
-          <td>{{ w.familyLabel || w.workFamily }}</td>
           <td>{{ w.client?.displayName || ('ID ' + w.clientId) }}</td>
 
           <!-- Status -->

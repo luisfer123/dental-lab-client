@@ -48,7 +48,7 @@ export class OrderDetailComponent implements OnInit {
   }
 
   loadWorks() {
-    this.workService.getWorksByOrder(this.orderId).subscribe({
+    this.orderService.getWorksByOrder(this.orderId).subscribe({
       next: data => this.works.set(data),
       error: () => this.error.set('No se pudieron cargar los trabajos de la orden.')
     });
