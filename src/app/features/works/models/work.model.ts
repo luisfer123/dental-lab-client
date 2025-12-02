@@ -29,6 +29,8 @@ export interface Work {
   createdAt?: string;
   updatedAt?: string;
 
+  internalCode:string;
+
   /** Optional HATEOAS links */
   _links?: any;
 }

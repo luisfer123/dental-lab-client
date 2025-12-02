@@ -38,6 +38,8 @@ export interface BridgeExtension {
   ponticDesign: string | null;        // “Ovate”, “Sanitary”, etc.
 
   notes?: string | null;
+
+  internalCode: string;
 }
 
 /**
