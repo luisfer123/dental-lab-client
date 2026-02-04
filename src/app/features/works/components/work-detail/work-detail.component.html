@@ -10,109 +10,103 @@
 
   <!-- Loading -->
   <div *ngIf="loading()" class="text-center py-5 text-muted">
-    <div class="spinner-border" role="status"></div>
+    <div class="spinner-border"></div>
     <p class="mt-2">Cargando información...</p>
   </div>
 
-  <!-- Error -->
-  <div *ngIf="error()" class="alert alert-danger text-center">
+  <!-- Error (antes alert-danger) -->
+  <div *ngIf="error()"
+       class="border border-danger bg-danger-subtle text-danger p-3 rounded text-center">
     {{ error() }}
   </div>
 
-
-  <!-- ====================================== -->
-  <!--   Work Details (Unified Attributes)    -->
-  <!-- ====================================== -->
-  <div *ngIf="!loading() && !error() && work()" class="card shadow-sm">
+  <!-- Work Details -->
+  <div *ngIf="!loading() && work()" class="card shadow-sm">
     <div class="card-body">
 
-      <!-- Title -->
       <h4 class="card-title mb-3">
         {{ work()!.typeLabel || work()!.base.type }}
       </h4>
 
       <div class="row">
-
-        <!-- FAMILY -->
         <div class="col-md-6 mb-2">
           <strong>Familia:</strong>
-          <span>{{ work()!.familyLabel || work()!.base.familyLabel }}</span>
+          {{ work()!.familyLabel || work()!.base.familyLabel }}
         </div>
 
-        <!-- TYPE -->
         <div class="col-md-6 mb-2">
           <strong>Tipo:</strong>
-          <span>{{ work()!.typeLabel || work()!.base.type }}</span>
+          {{ work()!.typeLabel || work()!.base.type }}
         </div>
 
-        <!-- STATUS -->
         <div class="col-md-6 mb-2">
           <strong>Estado:</strong>
-          <span class="badge"
-            [ngClass]="{
-              'bg-success': work()!.base.status === 'DELIVERED' || work()!.base.status === 'COMPLETED',
-              'bg-warning': work()!.base.status === 'IN_PROGRESS',
-              'bg-secondary': !work()!.base.status || work()!.base.status === 'PENDING'
-            }">
+          <span class="badge bg-secondary">
             {{ work()!.base.statusLabel || 'Sin estado' }}
           </span>
         </div>
 
-        <!-- CLIENT -->
         <div class="col-md-6 mb-2">
           <strong>Cliente:</strong>
-          <span>
-            {{ work()!.base.client?.displayName || ('ID ' + work()!.base.clientId) }}
-          </span>
+          {{ work()!.base.client?.displayName }}
         </div>
 
-        <!-- DESCRIPTION -->
-        <div class="col-md-6 mb-2">
-          <strong>Descripción:</strong>
-          <span>{{ work()!.base.description || '—' }}</span>
-        </div>
-
-        <!-- SHADE -->
-        <div class="col-md-6 mb-2">
-          <strong>Tono / Color:</strong>
-          <span>{{ work()!.base.shade || '—' }}</span>
-        </div>
-
-        <!-- CREATED DATE -->
-        <div class="col-md-6 mb-2">
-          <strong>Creado:</strong>
-          <span>{{ work()!.base.createdAt | date:'short' }}</span>
-        </div>
-
-        <!-- UPDATED DATE -->
-        <div class="col-md-6 mb-2">
-          <strong>Actualizado:</strong>
-          <span>{{ work()!.base.updatedAt | date:'short' }}</span>
-        </div>
-
-
-
-        <!-- ====================================== -->
-        <!--          EXTENSION DETAILS             -->
-        <!-- ====================================== -->
-        <ng-container *ngIf="work()?.extension">
-
-          <!-- BRIDGE -->
-          <div class="col-md-6 mb-2" *ngIf="work()?.base?.type === 'BRIDGE'">
-            <strong>Tipo de extensión:</strong> Puente
-          </div>
-
-        </ng-container>
-
-
-
-        <!-- NOTES -->
         <div class="col-md-12 mb-2">
           <strong>Notas:</strong>
-          <span>{{ work()!.base.notes || '—' }}</span>
+          {{ work()!.base.notes || '—' }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =============================== -->
+  <!-- Pricing -->
+  <!-- =============================== -->
+
+  <!-- Checking price -->
+  <div *ngIf="priceExists() === null"
+       class="text-center text-muted py-3 mt-4">
+    <div class="spinner-border spinner-border-sm"></div>
+    <span class="ms-2">Verificando precio…</span>
+  </div>
+
+  <!-- NO PRICE -->
+  <div *ngIf="priceExists() === false"
+       class="border border-warning bg-warning-subtle p-3 mt-4 rounded">
+    <strong>Este trabajo aún no tiene precio asignado.</strong>
+
+    <div class="mt-2">
+      <button class="btn btn-primary btn-sm"
+              (click)="goToPricing()">
+        Asignar precio
+      </button>
+    </div>
+  </div>
+
+  <!-- PRICE EXISTS -->
+  <div *ngIf="priceExists() === true && priceResolution()"
+       class="card shadow-sm mt-4">
+    <div class="card-body">
+
+      <h5 class="card-title mb-3">Precio del trabajo</h5>
+
+      <div class="row">
+        <div class="col-md-6">
+          <strong>Precio base:</strong>
+          {{ priceResolution()!.basePrice | number:'1.2-2' }}
+          {{ priceResolution()!.currency }}
         </div>
 
+        <div class="col-md-6">
+          <strong>Precio final:</strong>
+          <span class="fw-bold fs-5">
+            {{ priceResolution()!.finalPrice | number:'1.2-2' }}
+            {{ priceResolution()!.currency }}
+          </span>
+        </div>
       </div>
+
     </div>
   </div>
 

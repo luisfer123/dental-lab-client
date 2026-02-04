@@ -1,7 +1,10 @@
-import { Component, DestroyRef, OnInit, signal, computed, effect } from '@angular/core';
+import { Component, DestroyRef, OnInit, signal, computed, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { WorkService } from '../../services/work.service';
 import { Work } from '../../models/work.model';
@@ -49,6 +52,11 @@ export class WorkListComponent implements OnInit {
   clientId = signal<number | undefined>(undefined);
 
   /* ==========================================================
+     SEARCH SUBJECT (para debouncing)
+  ========================================================== */
+  private searchSubject = new Subject<string>();
+
+  /* ==========================================================
      COMPUTED & HELPERS
   ========================================================== */
   isFixed = computed(() => this.selectedWorkFamily() === 'FIXED_PROSTHESIS');
@@ -79,18 +87,61 @@ export class WorkListComponent implements OnInit {
     private route: ActivatedRoute,
     private destroyRef: DestroyRef
   ) {
-    // Efecto reactivo que solo recarga datos
-    effect((onCleanup) => {
-      this.fetchWorks(onCleanup);
-    }, {allowSignalWrites: true});
+    // Configurar debouncing para búsqueda
+    this.setupSearchDebounce();
+
+    // Efecto reactivo que recarga datos cuando cambian los filtros
+    effect(() => {
+      // Capturar valores de las señales para trackearlas
+      const family = this.selectedWorkFamily();
+      const type = this.selectedType();
+      const status = this.selectedStatus();
+      const search = this.searchTerm();
+      const page = this.page();
+      const size = this.size();
+      const clientId = this.clientId();
+
+      // Pasar los valores directamente
+      this.loadWorksWithParams(family, type, status, search, page, size, clientId);
+    }, { allowSignalWrites: true }); // Permitir escrituras en señales durante la carga
   }
 
   /* ==========================================================
      INIT
   ========================================================== */
   ngOnInit(): void {
+    // Parsear parámetros iniciales
     const params = this.route.snapshot.queryParamMap;
-    this.parseQueryParams(params);
+    
+    untracked(() => {
+      this.parseQueryParams(params);
+    });
+
+    // Escuchar cambios en los query params (navegación desde navbar u otros componentes)
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        untracked(() => {
+          this.parseQueryParams(params);
+        });
+      });
+  }
+
+  /* ==========================================================
+     SEARCH DEBOUNCE SETUP
+  ========================================================== */
+  private setupSearchDebounce(): void {
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(term => {
+        this.searchTerm.set(term);
+        this.page.set(0);
+        this.updateUrlParams();
+      });
   }
 
   /* ==========================================================
@@ -102,7 +153,9 @@ export class WorkListComponent implements OnInit {
       ALLOWED_FAMILIES.includes(familyParam) ? familyParam : 'ALL'
     );
 
-    this.page.set(Number(params.get('page')) || 0);
+    // Validar que la página sea válida
+    const pageParam = Number(params.get('page')) || 0;
+    this.page.set(Math.max(0, pageParam));
 
     this.selectedType.set(params.get('type') || 'ALL');
     this.selectedStatus.set(params.get('status') || 'ALL');
@@ -113,39 +166,65 @@ export class WorkListComponent implements OnInit {
   }
 
   /* ==========================================================
-     LOAD WORKS (Reactive with cleanup)
+     LOAD WORKS
   ========================================================== */
-  private fetchWorks(onCleanup: (fn: () => void) => void): void {
+  private loadWorks(): void {
+    const family = this.selectedWorkFamily();
+    const type = this.selectedType();
+    const status = this.selectedStatus();
+    const search = this.searchTerm();
+    const page = this.page();
+    const size = this.size();
+    const clientId = this.clientId();
+
+    this.loadWorksWithParams(family, type, status, search, page, size, clientId);
+  }
+
+  private loadWorksWithParams(
+    family: WorkFamily,
+    type: string,
+    status: string,
+    search: string,
+    page: number,
+    size: number,
+    clientId?: number
+  ): void {
     this.loading.set(true);
     this.error.set(undefined);
 
-    const family =
-      this.selectedWorkFamily() !== 'ALL' ? this.selectedWorkFamily() : undefined;
-    const type =
-      this.selectedType() !== 'ALL' ? this.selectedType() : undefined;
-    const status =
-      this.selectedStatus() !== 'ALL' ? this.selectedStatus() : undefined;
+    const familyParam = family !== 'ALL' ? family : undefined;
+    const typeParam = type !== 'ALL' ? type : undefined;
+    const statusParam = status !== 'ALL' ? status : undefined;
 
-    const p = this.page();
-    const s = this.size();
-
-    const sub = this.workService
-      .getAll(p, s, 'createdAt,desc', family, type, status, this.clientId())
+    this.workService
+      .getAll(
+        page,
+        size,
+        'createdAt,desc',
+        familyParam,
+        typeParam,
+        statusParam,
+        clientId
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data: Page<Work>) => {
           this.works.set(data?.content ?? []);
           this.totalElements.set(data?.totalElements ?? 0);
           this.totalPages.set(data?.totalPages ?? 1);
           this.loading.set(false);
+
+          // Si la página actual excede el total de páginas, ajustar
+          if (this.page() >= this.totalPages() && this.totalPages() > 0) {
+            this.page.set(Math.max(0, this.totalPages() - 1));
+          }
         },
-        error: () => {
+        error: (err) => {
+          console.error('Error loading works:', err);
           this.loading.set(false);
           this.error.set('No se pudieron cargar los trabajos.');
         }
       });
-
-    // Cleanup de la suscripción si el effect se vuelve a ejecutar
-    onCleanup(() => sub.unsubscribe());
   }
 
   /* ==========================================================
@@ -173,7 +252,13 @@ export class WorkListComponent implements OnInit {
     this.updateUrlParams();
   }
 
+  onSearchInput(term: string): void {
+    // Usar el subject para debouncing
+    this.searchSubject.next(term);
+  }
+
   onSearch(): void {
+    // Búsqueda inmediata (por ejemplo, al presionar Enter)
     this.page.set(0);
     this.updateUrlParams();
   }
@@ -205,7 +290,7 @@ export class WorkListComponent implements OnInit {
   /* ==========================================================
      URL SYNC
   ========================================================== */
-  updateUrlParams(): void {
+  private updateUrlParams(): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
@@ -240,6 +325,6 @@ export class WorkListComponent implements OnInit {
      REFRESH
   ========================================================== */
   reload(): void {
-    this.fetchWorks(() => {});
+    this.loadWorks();
   }
 }

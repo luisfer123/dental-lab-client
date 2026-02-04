@@ -1,6 +1,4 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
-import { roleGuard } from './core/guards/role.guard';
 import { LoginComponent } from './features/auth/login/login.component';
 
 export const routes: Routes = [
@@ -13,9 +11,23 @@ export const routes: Routes = [
     },
     {
         path: 'works',
-        loadChildren: () => 
-            import('./features/works/work.routes')
-            .then(m => m.WORK_ROUTES)
+        children: [
+            {
+                path: '',
+                loadComponent: () => import('./features/works/components/work-list/work-list.component')
+                    .then(m => m.WorkListComponent)
+            },
+            {
+                path: 'new',
+                loadComponent: () => import('./features/works/components/work-new/work-new.component')
+                    .then(m => m.WorkNewComponent)
+            },
+            {
+                path: ':id',
+                loadComponent: () => import('./features/works/components/work-detail/work-detail.component')
+                    .then(m => m.WorkDetailComponent)
+            }
+        ]
     },
     {
         path: 'orders',

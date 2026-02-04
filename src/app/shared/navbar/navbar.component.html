@@ -34,9 +34,13 @@
           <a class="nav-link" (click)="goToWorks()">Trabajos</a>
         </li>
 
+        <li class="nav-item">
+          <a class="nav-link" (click)="goToClients()">Clientes</a>
+        </li>
+
         <!-- Dropdown de Clientes -->
+         <!--
         <li class="nav-item dropdown">
-          <!-- ✅ SIN (click): Bootstrap maneja el toggle -->
           <a
             class="nav-link dropdown-toggle"
             id="clientesDropdown"
@@ -46,7 +50,6 @@
             Clientes
           </a>
 
-          <!-- Submenú controlado por Angular -->
           <ul class="dropdown-menu" aria-labelledby="clientesDropdown">
             <li>
               <a class="dropdown-item" (click)="goToClients()">Todos</a>
@@ -62,9 +65,9 @@
             </li>
           </ul>
         </li>
-
+        -->
       </ul>
-
+      
       <!-- Buscador -->
       <form class="d-flex me-3" role="search" (submit)="$event.preventDefault()">
         <input
